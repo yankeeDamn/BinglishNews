@@ -70,9 +70,9 @@ const firebaseConfig = {
 
 // Check if configuration is set up
 function isFirebaseConfigured() {
-  return !firebaseConfig.apiKey.includes('PASTE_YOUR') &&
-         !firebaseConfig.authDomain.includes('PASTE_YOUR') &&
-         !firebaseConfig.projectId.includes('PASTE_YOUR');
+  return !firebaseConfig.apiKey.includes('AIzaSyDT9sYqPUEP-LiAM9LLXnGxcvSh0m9f5dc') &&
+         !firebaseConfig.authDomain.includes('yourbrand-media.firebaseapp.com') &&
+         !firebaseConfig.projectId.includes('yourbrand-media');
 }
 
 // Make config available globally
