@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YourBrand Media - Your trusted source for Indian news, statewise updates, and online learning resources">
+    <meta name="keywords" content="Indian news, statewise news, online learning, education, courses, West Bengal, Bihar, Maharashtra">
+    <meta name="author" content="YourBrand Media">
+    <title>YourBrand Media - News, Learning &amp; Updates</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!--
+    ============================================
+    FIREBASE SETUP INSTRUCTIONS
+    ============================================
+    
+    Step 1: Create a Firebase Project
+    - Go to https://console.firebase.google.com/
+    - Click "Add Project" and follow the setup wizard
+    - Name your project (e.g., "yourbrand-media")
+    
+    Step 2: Enable Authentication
+    - In Firebase Console, go to Authentication > Sign-in method
+    - Enable "Email/Password" provider
+    - Save changes
+    
+    Step 3: Create Firestore Database
+    - Go to Firestore Database
+    - Click "Create database"
+    - Choose "Start in test mode" (you'll add security rules later)
+    - Select your region
+    
+    Step 4: Enable Firebase Storage
+    - Go to Storage
+    - Click "Get started"
+    - Use default security rules for now
+    
+    Step 5: Get Firebase Config
+    - Go to Project Settings (gear icon)
+    - Scroll to "Your apps" section
+    - Click "Web" icon (</>) to add web app
+    - Register app and copy the firebaseConfig object
+    - Paste it in app.js where indicated
+    
+    Step 6: Set Security Rules (After testing)
+    - See app.js for recommended Firestore and Storage security rules
+    - Copy them to Firebase Console under Rules tab
+    
+    ============================================
+    -->
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>YourBrand <span class="logo-accent">Media</span></h1>
+                </div>
+                <nav class="nav" id="nav">
+                    <ul class="nav-list">
+                        <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+                        <li><a href="#" class="nav-link" data-page="statewise">Statewise News</a></li>
+                        <li><a href="#" class="nav-link" data-page="learning">Learning Hub</a></li>
+                        <li><a href="#" class="nav-link" data-page="archive">Archive</a></li>
+                        <li><a href="#" class="nav-link auth-required" data-page="create-post" style="display: none;">Create Post</a></li>
+                        <li><a href="#" class="nav-link auth-required" data-page="dashboard" style="display: none;">My Dashboard</a></li>
+                        <li><a href="#" class="nav-link" data-page="history">History</a></li>
+                        <li><a href="#" class="nav-link" data-page="contact">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <button class="search-btn" id="searchBtn" aria-label="Search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+                    <button class="btn btn-primary btn-sm auth-hidden" id="signInBtn" style="display: none;">Sign In</button>
+                    <div class="user-profile auth-required" id="userProfile" style="display: none;">
+                        <button class="user-profile-btn" id="userProfileBtn">
+                            <span class="user-avatar">👤</span>
+                            <span class="user-email" id="userEmail"></span>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="#" data-page="dashboard">My Dashboard</a>
+                            <a href="#" data-page="create-post">Create Post</a>
+                            <a href="#" id="signOutBtn">Sign Out</a>
+                        </div>
+                    </div>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-modal-content">
+            <button class="search-modal-close" id="searchModalClose">&times;</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search articles, courses, or topics...">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Home Page -->
+        <section class="page active" id="page-home">
+            <div class="container">
+                <!-- Hero Section -->
+                <div class="hero">
+                    <div class="hero-image">
+                        <div class="hero-image-placeholder"></div>
+                    </div>
+                    <div class="hero-content">
+                        <span class="hero-category">Breaking News</span>
+                        <h2 class="hero-title">West Bengal Announces New Infrastructure Development Plan for Rural Areas</h2>
+                        <p class="hero-excerpt">The state government unveiled a comprehensive plan to improve rural infrastructure, focusing on roads, electricity, and water supply across 500 villages.</p>
+                        <div class="hero-meta">
+                            <span class="author">By Admin</span>
+                            <span class="date">October 25, 2025</span>
+                        </div>
+                        <button class="btn btn-primary">Read Full Story</button>
+                    </div>
+                </div>
+
+                <div class="content-layout">
+                    <div class="main-content">
+                        <!-- Latest News -->
+                        <section class="section">
+                            <div class="section-header">
+                                <h2>Latest News</h2>
+                                <a href="#" class="view-all">View All →</a>
+                            </div>
+                            <div class="news-grid" id="latestNews">
+                                <!-- Articles will be populated by JavaScript -->
+                            </div>
+                        </section>
+
+                        <!-- Statewise Headlines -->
+                        <section class="section">
+                            <div class="section-header">
+                                <h2>Statewise Headlines</h2>
+                            </div>
+                            <div class="statewise-highlights" id="statewiseHighlights">
+                                <!-- State highlights will be populated by JavaScript -->
+                            </div>
+                        </section>
+
+                        <!-- Facebook Feed Section -->
+                        <section class="section">
+                            <div class="section-header">
+                                <h2>From Our Facebook</h2>
+                            </div>
+                            <div class="facebook-feed">
+                                <div class="fb-post">
+                                    <div class="fb-post-header">
+                                        <div class="fb-avatar"></div>
+                                        <div>
+                                            <strong>YourBrand Media</strong>
+                                            <span class="fb-time">2 hours ago</span>
+                                        </div>
+                                    </div>
+                                    <p class="fb-post-text">🔴 LIVE: Coverage of major infrastructure summit in New Delhi. Watch experts discuss India's development roadmap.</p>
+                                    <div class="fb-post-image"></div>
+                                    <div class="fb-post-stats">
+                                        <span>👍 1.2K</span>
+                                        <span>💬 234 Comments</span>
+                                        <span>↗️ 89 Shares</span>
+                                    </div>
+                                </div>
+                                <div class="fb-post">
+                                    <div class="fb-post-header">
+                                        <div class="fb-avatar"></div>
+                                        <div>
+                                            <strong>YourBrand Media</strong>
+                                            <span class="fb-time">5 hours ago</span>
+                                        </div>
+                                    </div>
+                                    <p class="fb-post-text">📚 New course alert! Learn Python programming from scratch. Enroll now for free on our Learning Hub.</p>
+                                    <div class="fb-post-stats">
+                                        <span>👍 856</span>
+                                        <span>💬 67 Comments</span>
+                                        <span>↗️ 145 Shares</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <aside class="sidebar">
+                        <!-- Trending Now -->
+                        <div class="widget">
+                            <h3 class="widget-title">Trending Now</h3>
+                            <ul class="trending-list" id="trendingList">
+                                <!-- Trending items will be populated by JavaScript -->
+                            </ul>
+                        </div>
+
+                        <!-- Recent Posts -->
+                        <div class="widget">
+                            <h3 class="widget-title">Recent Posts</h3>
+                            <ul class="recent-list" id="recentList">
+                                <!-- Recent items will be populated by JavaScript -->
+                            </ul>
+                        </div>
+
+                        <!-- Categories -->
+                        <div class="widget">
+                            <h3 class="widget-title">Categories</h3>
+                            <ul class="category-list">
+                                <li><a href="#">Politics <span>(45)</span></a></li>
+                                <li><a href="#">Business <span>(32)</span></a></li>
+                                <li><a href="#">Technology <span>(28)</span></a></li>
+                                <li><a href="#">Education <span>(19)</span></a></li>
+                                <li><a href="#">Sports <span>(15)</span></a></li>
+                                <li><a href="#">Health <span>(12)</span></a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Facebook Follow -->
+                        <div class="widget">
+                            <h3 class="widget-title">Follow Us</h3>
+                            <div class="fb-follow">
+                                <div class="fb-page-info">
+                                    <div class="fb-page-avatar"></div>
+                                    <div>
+                                        <strong>YourBrand Media</strong>
+                                        <p>12.5K followers</p>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-sm">Follow Page</button>
+                            </div>
+                        </div>
+
+                        <!-- Newsletter -->
+                        <div class="widget newsletter-widget">
+                            <h3 class="widget-title">Newsletter</h3>
+                            <p>Get daily updates delivered to your inbox</p>
+                            <form class="newsletter-form">
+                                <input type="email" placeholder="Your email address" required>
+                                <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+                            </form>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statewise News Page -->
+        <section class="page" id="page-statewise">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>Statewise News</span>
+                </div>
+                <h1 class="page-title">Statewise News</h1>
+                <div class="filter-bar">
+                    <label for="stateFilter">Select State:</label>
+                    <select id="stateFilter" class="form-select">
+                        <option value="all">All States</option>
+                    </select>
+                </div>
+                <div class="content-layout">
+                    <div class="main-content">
+                        <div class="news-grid" id="statewiseNews">
+                            <!-- State news will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <aside class="sidebar">
+                        <div class="widget">
+                            <h3 class="widget-title">Quick Links</h3>
+                            <ul class="state-links" id="stateLinks">
+                                <!-- State links will be populated by JavaScript -->
+                            </ul>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <!-- Learning Hub Page -->
+        <section class="page" id="page-learning">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>Learning Hub</span>
+                </div>
+                <h1 class="page-title">Learning Hub</h1>
+                <div class="filter-bar">
+                    <input type="text" id="courseSearch" class="form-input" placeholder="Search courses...">
+                    <select id="courseFilter" class="form-select">
+                        <option value="all">All Categories</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Business">Business</option>
+                        <option value="Language">Language Learning</option>
+                        <option value="Professional Skills">Professional Skills</option>
+                    </select>
+                </div>
+                <div class="courses-grid" id="coursesGrid">
+                    <!-- Courses will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Archive Page -->
+        <section class="page" id="page-archive">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>Archive</span>
+                </div>
+                <h1 class="page-title">News Archive</h1>
+                <div class="archive-filters">
+                    <div class="filter-group">
+                        <label for="archiveMonth">Month:</label>
+                        <select id="archiveMonth" class="form-select">
+                            <option value="all">All Months</option>
+                            <option value="10">October</option>
+                            <option value="09">September</option>
+                            <option value="08">August</option>
+                            <option value="07">July</option>
+                            <option value="06">June</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="archiveYear">Year:</label>
+                        <select id="archiveYear" class="form-select">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="archiveCategory">Category:</label>
+                        <select id="archiveCategory" class="form-select">
+                            <option value="all">All Categories</option>
+                            <option value="Politics">Politics</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Business">Business</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Crime">Crime</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="applyArchiveFilters">Apply Filters</button>
+                </div>
+                <div class="archive-list" id="archiveList">
+                    <!-- Archive articles will be populated by JavaScript -->
+                </div>
+                <div class="pagination" id="archivePagination">
+                    <!-- Pagination will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- History Page -->
+        <section class="page" id="page-history">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>History</span>
+                </div>
+                <h1 class="page-title">Our History</h1>
+                
+                <div class="history-content">
+                    <section class="history-section">
+                        <h2>About YourBrand Media</h2>
+                        <p>Founded in 2020, YourBrand Media has emerged as a trusted source for comprehensive news coverage across India, combined with quality online learning resources. Our mission is to democratize access to information and education, empowering citizens with knowledge and skills.</p>
+                        <p>We believe in the power of accurate journalism and continuous learning. Our platform serves millions of readers across India, providing statewise news coverage, in-depth analysis, and practical educational content.</p>
+                    </section>
+
+                    <section class="history-section">
+                        <h2>Our Mission</h2>
+                        <div class="mission-grid">
+                            <div class="mission-item">
+                                <div class="mission-icon">📰</div>
+                                <h3>Accurate Reporting</h3>
+                                <p>Delivering unbiased, fact-checked news from across India</p>
+                            </div>
+                            <div class="mission-item">
+                                <div class="mission-icon">📚</div>
+                                <h3>Quality Education</h3>
+                                <p>Providing free access to professional learning resources</p>
+                            </div>
+                            <div class="mission-item">
+                                <div class="mission-icon">🌐</div>
+                                <h3>Digital Accessibility</h3>
+                                <p>Making information accessible to everyone, everywhere</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="history-section">
+                        <h2>Milestones</h2>
+                        <div class="timeline" id="timeline">
+                            <!-- Timeline will be populated by JavaScript -->
+                        </div>
+                    </section>
+
+                    <section class="history-section">
+                        <h2>Achievements</h2>
+                        <div class="achievements">
+                            <div class="achievement-card">
+                                <h3>1M+</h3>
+                                <p>Monthly Readers</p>
+                            </div>
+                            <div class="achievement-card">
+                                <h3>10</h3>
+                                <p>States Covered</p>
+                            </div>
+                            <div class="achievement-card">
+                                <h3>50+</h3>
+                                <p>Free Courses</p>
+                            </div>
+                            <div class="achievement-card">
+                                <h3>5000+</h3>
+                                <p>Articles Published</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sign In Page -->
+        <section class="page" id="page-signin">
+            <div class="container">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <h1 class="auth-title">Sign In</h1>
+                        <p class="auth-subtitle">Welcome back! Sign in to create and manage your posts.</p>
+                        <form class="auth-form" id="signInForm">
+                            <div class="form-group">
+                                <label for="signInEmail">Email Address *</label>
+                                <input type="email" id="signInEmail" class="form-input" required placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="signInPassword">Password *</label>
+                                <input type="password" id="signInPassword" class="form-input" required placeholder="Min 6 characters">
+                            </div>
+                            <div class="form-error" id="signInError" style="display: none;"></div>
+                            <button type="submit" class="btn btn-primary btn-full" id="signInSubmit">
+                                <span class="btn-text">Sign In</span>
+                                <span class="btn-loader" style="display: none;">⏳</span>
+                            </button>
+                        </form>
+                        <p class="auth-link">Don't have an account? <a href="#" data-page="signup">Sign Up</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sign Up Page -->
+        <section class="page" id="page-signup">
+            <div class="container">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <h1 class="auth-title">Sign Up</h1>
+                        <p class="auth-subtitle">Create an account to start publishing your stories.</p>
+                        <form class="auth-form" id="signUpForm">
+                            <div class="form-group">
+                                <label for="signUpEmail">Email Address *</label>
+                                <input type="email" id="signUpEmail" class="form-input" required placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="signUpPassword">Password *</label>
+                                <input type="password" id="signUpPassword" class="form-input" required placeholder="Min 6 characters">
+                            </div>
+                            <div class="form-group">
+                                <label for="signUpPasswordConfirm">Confirm Password *</label>
+                                <input type="password" id="signUpPasswordConfirm" class="form-input" required placeholder="Re-enter password">
+                            </div>
+                            <div class="form-error" id="signUpError" style="display: none;"></div>
+                            <button type="submit" class="btn btn-primary btn-full" id="signUpSubmit">
+                                <span class="btn-text">Create Account</span>
+                                <span class="btn-loader" style="display: none;">⏳</span>
+                            </button>
+                        </form>
+                        <p class="auth-link">Already have an account? <a href="#" data-page="signin">Sign In</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Create Post Page -->
+        <section class="page" id="page-create-post">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>Create Post</span>
+                </div>
+                <h1 class="page-title">Create New Post</h1>
+                <div class="create-post-layout">
+                    <form class="create-post-form" id="createPostForm">
+                        <div class="form-group">
+                            <label for="postTitle">Title *</label>
+                            <input type="text" id="postTitle" class="form-input" required placeholder="Enter post title (min 10 characters)">
+                            <span class="form-hint">Min 10 characters</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="postContent">Content *</label>
+                            <textarea id="postContent" class="form-textarea" rows="12" required placeholder="Write your article content here (min 100 characters)"></textarea>
+                            <span class="form-hint">Min 100 characters</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="postCategory">Category *</label>
+                                <select id="postCategory" class="form-select" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Politics">Politics</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Crime">Crime</option>
+                                    <option value="Health">Health</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="postState">State *</label>
+                                <select id="postState" class="form-select" required>
+                                    <option value="">Select State</option>
+                                    <option value="West Bengal">West Bengal</option>
+                                    <option value="Bihar">Bihar</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="Karnataka">Karnataka</option>
+                                    <option value="Kerala">Kerala</option>
+                                    <option value="Delhi">Delhi</option>
+                                    <option value="Rajasthan">Rajasthan</option>
+                                    <option value="Gujarat">Gujarat</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="postTags">Tags (comma-separated)</label>
+                            <input type="text" id="postTags" class="form-input" placeholder="e.g. Technology, Innovation, Startups">
+                            <span class="form-hint">Separate tags with commas</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="postImage">Upload Image (Max 5MB, jpg/png/webp)</label>
+                            <input type="file" id="postImage" class="form-file" accept="image/jpeg,image/png,image/webp">
+                            <div class="image-preview" id="imagePreview" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview">
+                                <button type="button" class="remove-image" id="removeImage">✕</button>
+                            </div>
+                            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <span class="progress-text" id="progressText">0%</span>
+                            </div>
+                        </div>
+                        <div class="form-error" id="createPostError" style="display: none;"></div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="publishPostBtn">
+                                <span class="btn-text">Publish Post</span>
+                                <span class="btn-loader" style="display: none;">⏳</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="saveDraftBtn">
+                                Save as Draft
+                            </button>
+                        </div>
+                    </form>
+                    <div class="post-preview-sidebar">
+                        <h3>Preview</h3>
+                        <div class="preview-card">
+                            <div class="preview-category" id="previewCategory">Category</div>
+                            <h4 class="preview-title" id="previewTitle">Your title will appear here</h4>
+                            <p class="preview-excerpt" id="previewExcerpt">Your content preview...</p>
+                            <div class="preview-meta">
+                                <span id="previewState">State</span>
+                                <span id="previewDate">Today</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Page -->
+        <section class="page" id="page-dashboard">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>My Dashboard</span>
+                </div>
+                <h1 class="page-title">My Dashboard</h1>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPosts">0</div>
+                        <div class="stat-label">Total Posts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="publishedPosts">0</div>
+                        <div class="stat-label">Published</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="draftPosts">0</div>
+                        <div class="stat-label">Drafts</div>
+                    </div>
+                </div>
+                <div class="dashboard-posts">
+                    <h2>My Posts</h2>
+                    <div class="posts-list" id="userPostsList">
+                        <div class="loading-message" id="dashboardLoading">Loading your posts...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Page -->
+        <section class="page" id="page-contact">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="#" data-page="home">Home</a> / <span>Contact</span>
+                </div>
+                <h1 class="page-title">Contact Us</h1>
+                
+                <div class="contact-layout">
+                    <div class="contact-form-section">
+                        <h2>Send us a Message</h2>
+                        <form class="contact-form" id="contactForm">
+                            <div class="form-group">
+                                <label for="contactName">Name *</label>
+                                <input type="text" id="contactName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactEmail">Email *</label>
+                                <input type="email" id="contactEmail" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactPhone">Phone</label>
+                                <input type="tel" id="contactPhone" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="contactSubject">Subject *</label>
+                                <input type="text" id="contactSubject" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactMessage">Message *</label>
+                                <textarea id="contactMessage" class="form-textarea" rows="6" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                        <div class="form-success" id="formSuccess" style="display: none;">
+                            ✓ Thank you! Your message has been sent successfully.
+                        </div>
+                    </div>
+
+                    <div class="contact-info-section">
+                        <h2>Contact Information</h2>
+                        <div class="contact-info">
+                            <div class="contact-info-item">
+                                <strong>📧 Email:</strong>
+                                <p>contact@yourbrandmedia.in</p>
+                            </div>
+                            <div class="contact-info-item">
+                                <strong>📞 Phone:</strong>
+                                <p>+91 98765 43210</p>
+                            </div>
+                            <div class="contact-info-item">
+                                <strong>📍 Address:</strong>
+                                <p>123 Media Tower, Park Street<br>Kolkata - 700016<br>West Bengal, India</p>
+                            </div>
+                        </div>
+
+                        <div class="map-placeholder">
+                            <div class="map-icon">🗺️</div>
+                            <p>Map Location</p>
+                        </div>
+
+                        <div class="social-links">
+                            <h3>Follow Us</h3>
+                            <div class="social-icons">
+                                <a href="#" class="social-icon facebook" aria-label="Facebook">f</a>
+                                <a href="#" class="social-icon twitter" aria-label="Twitter">𝕏</a>
+                                <a href="#" class="social-icon instagram" aria-label="Instagram">📷</a>
+                                <a href="#" class="social-icon linkedin" aria-label="LinkedIn">in</a>
+                                <a href="#" class="social-icon youtube" aria-label="YouTube">▶</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>About YourBrand Media</h3>
+                    <p>Your trusted source for Indian news, statewise updates, and quality online learning resources. Empowering citizens through information and education.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Facebook">f</a>
+                        <a href="#" aria-label="Twitter">𝕏</a>
+                        <a href="#" aria-label="Instagram">📷</a>
+                        <a href="#" aria-label="LinkedIn">in</a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#" data-page="home">Home</a></li>
+                        <li><a href="#" data-page="statewise">Statewise News</a></li>
+                        <li><a href="#" data-page="learning">Learning Hub</a></li>
+                        <li><a href="#" data-page="archive">Archive</a></li>
+                        <li><a href="#" data-page="history">About Us</a></li>
+                        <li><a href="#" data-page="contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="#">Politics</a></li>
+                        <li><a href="#">Business</a></li>
+                        <li><a href="#">Technology</a></li>
+                        <li><a href="#">Education</a></li>
+                        <li><a href="#">Sports</a></li>
+                        <li><a href="#">Health</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Disclaimer</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 YourBrand Media. All rights reserved. | <a href="#">Disclaimer</a>: All content is for informational purposes only.</p>
+            </div>
+        </div>
+        <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
