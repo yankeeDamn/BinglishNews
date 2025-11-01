@@ -69,6 +69,16 @@ const firebaseConfig = {
 // ========================================
 
 // Check if configuration is set up
+
+//
+const firebaseConfig = {
+  apiKey: "AIzaSyDT9sYqPUEP-LiAM9LLXnGxcvSh0m9f5dc",
+  authDomain: "yourbrand-media.firebaseapp.com",
+  projectId: "yourbrand-media",
+  storageBucket: "yourbrand-media.firebasestorage.app",
+  messagingSenderId: "1084725378413",
+  appId: "1:1084725378413:web:1165180b0bfcf310fe6e64"
+};
 function isFirebaseConfigured() {
   return !firebaseConfig.apiKey.includes('AIzaSyDT9sYqPUEP-LiAM9LLXnGxcvSh0m9f5dc') &&
          !firebaseConfig.authDomain.includes('yourbrand-media.firebaseapp.com') &&
