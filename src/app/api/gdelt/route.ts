@@ -49,9 +49,19 @@ export async function GET(request: Request) {
     }
 
     const data = await res.json();
-    const articles: GdeltArticle[] = (data.articles ?? []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (a: any) => ({
+
+    interface GdeltRawArticle {
+      url?: string;
+      title?: string;
+      seendate?: string;
+      socialimage?: string;
+      domain?: string;
+      language?: string;
+      sourcecountry?: string;
+    }
+
+    const articles: GdeltArticle[] = ((data.articles ?? []) as GdeltRawArticle[]).map(
+      (a) => ({
         url: a.url ?? "",
         title: a.title ?? "",
         seendate: a.seendate ?? "",

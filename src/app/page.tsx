@@ -48,8 +48,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* World News */}
-      <section>
+      <section id="world-news">
         <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-white">
           World News
         </h2>

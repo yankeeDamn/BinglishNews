@@ -33,7 +33,7 @@ export default function Navbar() {
             Home
           </Link>
           <Link
-            href="/posts/new"
+            href="/#world-news"
             className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
           >
             World News
@@ -52,7 +52,7 @@ export default function Navbar() {
               {profile?.role === "admin" && (
                 <Link
                   href="/admin"
-                  className="text-amber-600 hover:text-amber-700 font-medium"
+                  className="font-medium text-amber-600 hover:text-amber-700"
                 >
                   Admin
                 </Link>
