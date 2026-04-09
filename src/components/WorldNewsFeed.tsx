@@ -12,9 +12,12 @@ export default function WorldNewsFeed() {
     async function fetchNews() {
       try {
         const res = await fetch("/api/gdelt?q=world+news&max=12");
-        if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
-        setArticles(data.articles ?? []);
+        if (data.articles && data.articles.length > 0) {
+          setArticles(data.articles);
+        } else if (!res.ok) {
+          setError("Could not load world news. Please try again later.");
+        }
       } catch {
         setError("Could not load world news. Please try again later.");
       } finally {

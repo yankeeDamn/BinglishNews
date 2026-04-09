@@ -39,7 +39,15 @@ export async function GET(request: Request) {
     gdeltUrl.searchParams.set("maxrecords", maxRecords);
     gdeltUrl.searchParams.set("format", format);
 
-    const res = await fetch(gdeltUrl.toString(), { next: { revalidate: 900 } });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const res = await fetch(gdeltUrl.toString(), {
+      next: { revalidate: 900 },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
 
     if (!res.ok) {
       return NextResponse.json(
@@ -87,9 +95,16 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error("GDELT fetch error:", error);
+    const isTimeout =
+      error instanceof DOMException && error.name === "AbortError";
     return NextResponse.json(
-      { error: "Internal error fetching GDELT data" },
-      { status: 500 },
+      {
+        error: isTimeout
+          ? "GDELT request timed out"
+          : "Internal error fetching GDELT data",
+        articles: [],
+      },
+      { status: isTimeout ? 504 : 500 },
     );
   }
 }
