@@ -3,6 +3,18 @@
 import { useEffect, useState } from "react";
 import type { GdeltArticle } from "@/types";
 
+function formatDate(seendate: string): string {
+  if (!seendate || seendate.length < 8) return "";
+  // GDELT seendate format: YYYYMMDDTHHMMSSZ — parse as UTC to avoid timezone drift
+  const y = +seendate.slice(0, 4);
+  const m = +seendate.slice(4, 6);
+  const d = +seendate.slice(6, 8);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return isNaN(date.getTime())
+    ? ""
+    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
 export default function WorldNewsFeed() {
   const [articles, setArticles] = useState<GdeltArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,11 +41,11 @@ export default function WorldNewsFeed() {
 
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-56 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800"
+            className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800"
           />
         ))}
       </div>
@@ -41,39 +53,66 @@ export default function WorldNewsFeed() {
   }
 
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
+    return (
+      <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center dark:border-red-900/30 dark:bg-red-900/10">
+        <p className="text-red-600 dark:text-red-400">{error}</p>
+      </div>
+    );
   }
 
   if (articles.length === 0) {
     return (
-      <p className="text-center text-zinc-500">No world news available.</p>
+      <p className="text-center text-slate-500 dark:text-slate-400">
+        No world news available right now. Check back soon.
+      </p>
     );
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {articles.map((article, idx) => (
         <a
           key={`${article.url}-${idx}`}
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex flex-col rounded-xl border border-zinc-200 bg-white p-4 transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+          className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
         >
-          {article.socialimage && (
+          {article.socialimage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={article.socialimage}
               alt={article.title}
-              className="mb-3 h-36 w-full rounded-lg object-cover"
+              className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
+          ) : (
+            <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600">
+              <span className="text-4xl opacity-40">🌐</span>
+            </div>
           )}
-          <h4 className="mb-2 line-clamp-2 text-sm font-semibold text-zinc-900 group-hover:text-blue-600 dark:text-white">
-            {article.title}
-          </h4>
-          <div className="mt-auto flex items-center justify-between text-xs text-zinc-500">
-            <span>{article.domain}</span>
-            <span>{article.sourcecountry}</span>
+
+          <div className="flex flex-1 flex-col p-4">
+            <h4 className="mb-3 line-clamp-3 text-sm font-semibold leading-snug text-slate-900 group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+              {article.title}
+            </h4>
+
+            <div className="mt-auto flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-1.5 overflow-hidden">
+                <span className="truncate font-medium text-slate-700 dark:text-slate-300">
+                  {article.domain}
+                </span>
+                {article.sourcecountry && (
+                  <>
+                    <span>·</span>
+                    <span>{article.sourcecountry}</span>
+                  </>
+                )}
+              </div>
+              {(() => {
+                const dateStr = formatDate(article.seendate);
+                return dateStr ? <span className="shrink-0">{dateStr}</span> : null;
+              })()}
+            </div>
           </div>
         </a>
       ))}
