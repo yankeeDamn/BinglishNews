@@ -7,6 +7,7 @@ interface CacheEntry {
 }
 
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const GDELT_REQUEST_TIMEOUT_MS = 8000;
 let cache: CacheEntry | null = null;
 
 export async function GET(request: Request) {
@@ -39,7 +40,21 @@ export async function GET(request: Request) {
     gdeltUrl.searchParams.set("maxrecords", maxRecords);
     gdeltUrl.searchParams.set("format", format);
 
-    const res = await fetch(gdeltUrl.toString(), { next: { revalidate: 900 } });
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      GDELT_REQUEST_TIMEOUT_MS,
+    );
+
+    let res: Response;
+    try {
+      res = await fetch(gdeltUrl.toString(), {
+        next: { revalidate: 900 },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!res.ok) {
       return NextResponse.json(
@@ -87,9 +102,16 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error("GDELT fetch error:", error);
+    const isTimeout =
+      error instanceof DOMException && error.name === "AbortError";
     return NextResponse.json(
-      { error: "Internal error fetching GDELT data" },
-      { status: 500 },
+      {
+        error: isTimeout
+          ? "GDELT request timed out"
+          : "Internal error fetching GDELT data",
+        articles: [],
+      },
+      { status: isTimeout ? 504 : 500 },
     );
   }
 }
