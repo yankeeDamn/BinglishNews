@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 
   try {
     const gdeltUrl = new URL("https://api.gdeltproject.org/api/v2/doc/doc");
-    // Ensure results are in English by appending sourcelang filter
+    // Ensure results are in English by appending sourcelang filter in query
     const queryWithLang = queryParam.includes("sourcelang:")
       ? queryParam
       : `${queryParam} sourcelang:english`;
@@ -43,6 +43,8 @@ export async function GET(request: Request) {
     gdeltUrl.searchParams.set("mode", mode);
     gdeltUrl.searchParams.set("maxrecords", maxRecords);
     gdeltUrl.searchParams.set("format", format);
+    // Additional sourcelang URL parameter for extra filtering certainty
+    gdeltUrl.searchParams.set("sourcelang", "eng");
 
     const controller = new AbortController();
     const timeout = setTimeout(
@@ -79,17 +81,19 @@ export async function GET(request: Request) {
       sourcecountry?: string;
     }
 
-    const articles: GdeltArticle[] = ((data.articles ?? []) as GdeltRawArticle[]).map(
-      (a) => ({
-        url: a.url ?? "",
-        title: a.title ?? "",
-        seendate: a.seendate ?? "",
-        socialimage: a.socialimage ?? "",
-        domain: a.domain ?? "",
-        language: a.language ?? "",
-        sourcecountry: a.sourcecountry ?? "",
-      }),
-    );
+    const articles: GdeltArticle[] = ((data.articles ?? []) as GdeltRawArticle[])
+      .filter((a) => !a.language || a.language.toLowerCase() === "english")
+      .map(
+        (a) => ({
+          url: a.url ?? "",
+          title: a.title ?? "",
+          seendate: a.seendate ?? "",
+          socialimage: a.socialimage ?? "",
+          domain: a.domain ?? "",
+          language: a.language ?? "",
+          sourcecountry: a.sourcecountry ?? "",
+        }),
+      );
 
     // Update in-memory cache for default query
     if (queryParam === "world news") {
