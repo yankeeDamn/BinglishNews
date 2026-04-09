@@ -5,14 +5,14 @@ import type { GdeltArticle } from "@/types";
 
 function formatDate(seendate: string): string {
   if (!seendate || seendate.length < 8) return "";
-  // GDELT seendate format: YYYYMMDDTHHMMSSZ
-  const y = seendate.slice(0, 4);
-  const m = seendate.slice(4, 6);
-  const d = seendate.slice(6, 8);
-  const date = new Date(`${y}-${m}-${d}`);
+  // GDELT seendate format: YYYYMMDDTHHMMSSZ — parse as UTC to avoid timezone drift
+  const y = +seendate.slice(0, 4);
+  const m = +seendate.slice(4, 6);
+  const d = +seendate.slice(6, 8);
+  const date = new Date(Date.UTC(y, m - 1, d));
   return isNaN(date.getTime())
     ? ""
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
 export default function WorldNewsFeed() {
@@ -108,9 +108,10 @@ export default function WorldNewsFeed() {
                   </>
                 )}
               </div>
-              {formatDate(article.seendate) && (
-                <span className="shrink-0">{formatDate(article.seendate)}</span>
-              )}
+              {(() => {
+                const dateStr = formatDate(article.seendate);
+                return dateStr ? <span className="shrink-0">{dateStr}</span> : null;
+              })()}
             </div>
           </div>
         </a>

@@ -23,7 +23,7 @@ export default async function HomePage() {
 
         <div className="relative mx-auto max-w-4xl text-center">
           <span className="mb-4 inline-block rounded-full bg-white/15 px-4 py-1 text-sm font-medium backdrop-blur-sm">
-            🌐 Real-time world news &amp; community stories
+            🌐 Real-time world news & community stories
           </span>
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
             Binglish<span className="text-yellow-300">News</span>
