@@ -38,6 +38,22 @@ export default function Navbar() {
           >
             World News
           </Link>
+          <a
+            href="https://sokal-bela.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          >
+            Sokal Bela
+          </a>
+          <a
+            href="https://quiz-app-regd.onrender.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          >
+            Quiz App
+          </a>
 
           {loading ? (
             <span className="h-4 w-16 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />

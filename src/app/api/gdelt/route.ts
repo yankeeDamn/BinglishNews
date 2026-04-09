@@ -35,7 +35,11 @@ export async function GET(request: Request) {
 
   try {
     const gdeltUrl = new URL("https://api.gdeltproject.org/api/v2/doc/doc");
-    gdeltUrl.searchParams.set("query", queryParam);
+    // Ensure results are in English by appending sourcelang filter
+    const queryWithLang = queryParam.includes("sourcelang:")
+      ? queryParam
+      : `${queryParam} sourcelang:english`;
+    gdeltUrl.searchParams.set("query", queryWithLang);
     gdeltUrl.searchParams.set("mode", mode);
     gdeltUrl.searchParams.set("maxrecords", maxRecords);
     gdeltUrl.searchParams.set("format", format);
