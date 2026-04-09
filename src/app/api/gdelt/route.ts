@@ -7,6 +7,7 @@ interface CacheEntry {
 }
 
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const GDELT_REQUEST_TIMEOUT_MS = 8000;
 let cache: CacheEntry | null = null;
 
 export async function GET(request: Request) {
@@ -40,14 +41,20 @@ export async function GET(request: Request) {
     gdeltUrl.searchParams.set("format", format);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      GDELT_REQUEST_TIMEOUT_MS,
+    );
 
-    const res = await fetch(gdeltUrl.toString(), {
-      next: { revalidate: 900 },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
+    let res: Response;
+    try {
+      res = await fetch(gdeltUrl.toString(), {
+        next: { revalidate: 900 },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!res.ok) {
       return NextResponse.json(
