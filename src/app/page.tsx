@@ -87,17 +87,30 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* News Feed */}
+        {/* World News Feed */}
         <section id="news">
           <div className="mb-6 flex items-center gap-3">
             <h2 className="text-2xl font-bold text-white">
-              🌍 News Feed
+              🌍 World News
             </h2>
             <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-0.5 text-xs font-medium text-gold">
               GDELT · RSS · HackerNews
             </span>
           </div>
           <NewsFeed id="news-feed" />
+        </section>
+
+        {/* India News Feed */}
+        <section id="india-news" className="mt-16">
+          <div className="mb-6 flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-white">
+              🇮🇳 India News
+            </h2>
+            <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-0.5 text-xs font-medium text-gold">
+              BBC India · TOI · The Hindu
+            </span>
+          </div>
+          <NewsFeed id="india-news-feed" initialCategory="india" />
         </section>
       </div>
     </div>

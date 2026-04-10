@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import type { GdeltArticle } from "@/types";
 
 const GDELT_REQUEST_TIMEOUT_MS = 8000;
+const MAX_RECORDS_LIMIT = 250;
+const ALLOWED_MODES = new Set(["ArtList", "TimelineVol", "TimelineVolNorm", "TimelineTone", "TimelineSourceCountry"]);
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +11,17 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const queryParam = searchParams.get("q") || "world news";
   const mode = searchParams.get("mode") || "ArtList";
-  const maxRecords = searchParams.get("max") || "20";
+  const maxRecordsRaw = parseInt(searchParams.get("max") || "20", 10);
+  const maxRecords = String(Math.min(Math.max(1, maxRecordsRaw || 20), MAX_RECORDS_LIMIT));
   const format = "json";
+
+  // Validate mode parameter
+  if (!ALLOWED_MODES.has(mode)) {
+    return NextResponse.json(
+      { error: `Invalid mode. Allowed: ${[...ALLOWED_MODES].join(", ")}` },
+      { status: 400 },
+    );
+  }
 
   try {
     const gdeltUrl = new URL("https://api.gdeltproject.org/api/v2/doc/doc");

@@ -1,28 +1,30 @@
 # BinglishNews
 
-A community-driven news platform built with **Next.js (App Router)**, **Firebase**, and **GDELT**.
+A modern, multi-source news aggregation platform built with **Next.js 16 (App Router)**, **Firebase**, and a **Black + Gold** dark theme. Aggregates headlines from GDELT, RSS feeds, and Hacker News — plus original community stories with admin moderation.
 
 ## Features
 
-- 📰 **World News** — Fetched server-side from GDELT with 15-minute cache
-- ✍️ **User-Generated Posts** — Authenticated users can submit news posts
-- 🛡️ **Moderation System** — Posts default to `pending`; only admins can approve/reject
-- 🔐 **Firebase Auth** — Email/password authentication with Firestore user profiles
+- 📰 **Multi-Source News** — Aggregated from GDELT, RSS (BBC, NYT, Reuters), and Hacker News with automatic de-duplication
+- 🇮🇳 **Dedicated India Feed** — India-focused RSS feeds (BBC India, Times of India, The Hindu) with GDELT region filtering
+- ✍️ **Community Posts** — Authenticated users submit news posts; admin moderation required for publishing
+- 🛡️ **Admin Moderation** — Posts start as `pending`; admin dashboard at `/admin` for approve/reject workflow
+- 🔐 **Firebase Auth** — Email/password authentication with friendly error messages and Firestore user profiles
 - 🖼️ **Image Uploads** — Firebase Storage with 5 MB limit and image-only validation
-- 🔍 **SEO Optimized** — Per-page metadata, Open Graph, Twitter cards
-- 🚀 **Vercel Ready** — Deploys instantly on Vercel free tier
+- 🔍 **Search + Filters** — Category tabs (All / World / India / Tech), search bar, and pagination
+- 🎨 **Black + Gold Theme** — Dark background, gold accents, shimmer skeletons, responsive mobile-first design
+- 🚀 **Vercel Ready** — Serverless-compatible with `Cache-Control` headers (no in-memory cache)
 
 ## Tech Stack
 
-| Layer       | Technology                     |
-|-------------|-------------------------------|
-| Framework   | Next.js 16 (App Router)        |
-| Styling     | Tailwind CSS 4                 |
-| Auth        | Firebase Auth (email/password) |
-| Database    | Cloud Firestore                |
-| Storage     | Firebase Storage               |
-| World News  | GDELT API v2                   |
-| Hosting     | Vercel                         |
+| Layer       | Technology                                          |
+|-------------|-----------------------------------------------------|
+| Framework   | Next.js 16 (App Router, Turbopack)                  |
+| Styling     | Tailwind CSS 4, Black + Gold theme                  |
+| Auth        | Firebase Auth (email/password)                      |
+| Database    | Cloud Firestore                                     |
+| Storage     | Firebase Storage                                    |
+| News Sources| GDELT API v2 · RSS (BBC, NYT, Reuters, TOI, The Hindu) · Hacker News |
+| Hosting     | Vercel                                              |
 
 ## Getting Started
 
@@ -40,11 +42,13 @@ npm install
 2. Enable **Authentication** → Email/Password
 3. Create a **Firestore** database
 4. Enable **Storage**
-5. Copy `.env.local.example` to `.env.local` and fill in your Firebase config:
+5. Copy `.env.example` to `.env.local` and fill in your Firebase config:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env.local
 ```
+
+> The site loads without Firebase env vars, but auth, posts, and moderation features require them.
 
 ### 3. Deploy Security Rules
 
@@ -72,32 +76,77 @@ Add the same environment variables from `.env.local` to your Vercel project sett
 src/
 ├── app/
 │   ├── api/
-│   │   ├── gdelt/route.ts          # GDELT Route Handler (15-min cache)
-│   │   └── posts/[id]/moderate/    # Moderation API endpoint
-│   ├── admin/page.tsx               # Admin moderation dashboard
+│   │   ├── gdelt/route.ts              # Legacy GDELT endpoint (validated)
+│   │   ├── news/route.ts               # Unified news endpoint (paginated, multi-source)
+│   │   └── posts/[id]/moderate/        # Moderation API
+│   ├── admin/page.tsx                   # Admin moderation dashboard
 │   ├── auth/
-│   │   ├── signin/page.tsx          # Sign-in page
-│   │   └── signup/page.tsx          # Sign-up page
+│   │   ├── signin/page.tsx              # Sign-in with friendly error messages
+│   │   └── signup/page.tsx              # Sign-up with validation
 │   ├── posts/
-│   │   ├── new/page.tsx             # Create post (pending status)
-│   │   └── [id]/page.tsx            # Post detail page
-│   ├── layout.tsx                   # Root layout with SEO metadata
-│   └── page.tsx                     # Home page (SSR)
+│   │   ├── new/page.tsx                 # Create post (pending moderation)
+│   │   └── [id]/page.tsx                # Post detail page
+│   ├── globals.css                      # Black + Gold theme variables
+│   ├── layout.tsx                       # Root layout with SEO metadata
+│   └── page.tsx                         # Home: hero, community posts, world & India news
 ├── components/
-│   ├── Navbar.tsx                   # Navigation with auth state
-│   ├── PostCard.tsx                 # Post preview card
-│   └── WorldNewsFeed.tsx            # GDELT world news feed
+│   ├── Navbar.tsx                       # Responsive nav with mobile toggle
+│   ├── NewsFeed.tsx                     # Category tabs, search, pagination, skeletons
+│   ├── PostCard.tsx                     # Post preview card
+│   └── WorldNewsFeed.tsx                # Legacy GDELT-only feed
 ├── context/
-│   └── AuthContext.tsx              # Firebase Auth context provider
+│   └── AuthContext.tsx                  # Firebase Auth context with error state
 ├── lib/
-│   ├── firebase.ts                  # Firebase client init
-│   ├── firestore.ts                 # Firestore CRUD operations
-│   └── storage.ts                   # Firebase Storage uploads
+│   ├── firebase.ts                      # Firebase client init (safe lazy loading)
+│   ├── firestore.ts                     # Firestore CRUD operations
+│   ├── storage.ts                       # Firebase Storage uploads
+│   └── news/
+│       ├── provider.ts                  # NewsProvider interface
+│       ├── gdelt-provider.ts            # GDELT provider (48h rolling window)
+│       ├── rss-provider.ts              # RSS provider (world + India feeds)
+│       ├── hackernews-provider.ts       # Hacker News provider
+│       ├── aggregator.ts                # Merge, dedupe, retry, fallback
+│       ├── utils.ts                     # Shared hostname extraction
+│       └── index.ts                     # Barrel exports
 └── types/
-    └── index.ts                     # TypeScript interfaces
-firestore.rules                      # Firestore security rules
-storage.rules                        # Storage security rules
+    └── index.ts                         # Article, NewsResponse, Post, UserProfile
+firestore.rules                          # Firestore security rules
+storage.rules                            # Storage security rules
 ```
+
+## News Provider Architecture
+
+All providers implement `NewsProvider` interface with a `fetch(options)` method:
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────────┐
+│  GDELT   │    │   RSS    │    │  HackerNews  │
+│ Provider │    │ Provider │    │   Provider   │
+└────┬─────┘    └────┬─────┘    └──────┬───────┘
+     │               │                 │
+     └───────────┬───┴─────────────────┘
+                 │
+          ┌──────▼──────┐
+          │  Aggregator  │  ← retry, dedupe, fallback
+          └──────┬──────┘
+                 │
+          ┌──────▼──────┐
+          │  /api/news   │  ← pagination, Cache-Control
+          └─────────────┘
+```
+
+To add a new source: implement `NewsProvider`, add to `providers[]` in `aggregator.ts`.
+
+## API Endpoints
+
+| Endpoint                       | Description                                      |
+|-------------------------------|--------------------------------------------------|
+| `GET /api/news`                | Aggregated news (all sources, paginated)          |
+| `GET /api/news?region=IN`      | India-focused news                               |
+| `GET /api/news?category=tech`  | Category filter (world, india, tech)              |
+| `GET /api/news?page=2&pageSize=20` | Pagination                                  |
+| `GET /api/news?q=climate`      | Search query                                     |
+| `GET /api/gdelt`               | Legacy GDELT-only endpoint                       |
 
 ## Moderation Flow
 
