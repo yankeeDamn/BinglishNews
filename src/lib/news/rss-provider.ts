@@ -1,6 +1,7 @@
 import type { Article } from "@/types";
 import type { NewsProvider, FetchOptions } from "./provider";
 import RssParser from "rss-parser";
+import { extractHostname } from "./utils";
 
 const parser = new RssParser({
   timeout: 8_000,
@@ -42,9 +43,7 @@ async function parseFeed(feed: FeedConfig): Promise<Article[]> {
         item.enclosure?.url ??
         (item["media:content"] as { $?: { url?: string } } | undefined)?.$?.url ??
         "",
-      source: (() => {
-        try { return new URL(feed.url).hostname.replace("feeds.", "").replace("rss.", ""); } catch { return "unknown"; }
-      })(),
+      source: extractHostname(feed.url).replace("feeds.", "").replace("rss.", ""),
       provider: "rss",
       region: feed.region,
       category: feed.category,

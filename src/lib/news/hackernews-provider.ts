@@ -1,5 +1,6 @@
 import type { Article } from "@/types";
 import type { NewsProvider, FetchOptions } from "./provider";
+import { extractHostname } from "./utils";
 
 const HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json";
 const HN_ITEM_URL = (id: number) =>
@@ -57,9 +58,7 @@ export class HackerNewsProvider implements NewsProvider {
             ? new Date(item.time * 1000).toISOString()
             : new Date().toISOString(),
           imageUrl: "",
-          source: (() => {
-            try { return new URL(item.url).hostname; } catch { return "news.ycombinator.com"; }
-          })(),
+          source: extractHostname(item.url, "news.ycombinator.com"),
           provider: "hackernews",
           region: "",
           category: "tech",

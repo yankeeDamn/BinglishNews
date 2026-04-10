@@ -29,6 +29,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result, {
       headers: {
+        // Cache for 5 minutes (s-maxage), serve stale for 1 minute while revalidating
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
       },
     });

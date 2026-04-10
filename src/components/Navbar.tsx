@@ -15,8 +15,8 @@ export default function Navbar() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-    } catch {
-      // Firebase may not be configured
+    } catch (err) {
+      console.error("Sign out failed:", err);
     }
     router.push("/");
   };

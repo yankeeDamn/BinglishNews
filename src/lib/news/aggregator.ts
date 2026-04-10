@@ -8,6 +8,9 @@ import { HackerNewsProvider } from "./hackernews-provider";
 /*  De-duplication                                                     */
 /* ------------------------------------------------------------------ */
 
+/** Titles shorter than this are too generic for reliable dedup by title alone */
+const MIN_TITLE_LENGTH_FOR_DEDUP = 10;
+
 function normaliseTitle(title: string): string {
   return title
     .toLowerCase()
@@ -28,10 +31,10 @@ function deduplicateArticles(articles: Article[]): Article[] {
     if (url && seenUrls.has(url)) continue;
 
     const normTitle = normaliseTitle(article.title);
-    if (normTitle && normTitle.length > 10 && seenTitles.has(normTitle)) continue;
+    if (normTitle && normTitle.length > MIN_TITLE_LENGTH_FOR_DEDUP && seenTitles.has(normTitle)) continue;
 
     if (url) seenUrls.add(url);
-    if (normTitle && normTitle.length > 10) seenTitles.add(normTitle);
+    if (normTitle && normTitle.length > MIN_TITLE_LENGTH_FOR_DEDUP) seenTitles.add(normTitle);
     result.push(article);
   }
   return result;
@@ -119,7 +122,8 @@ export async function fetchAggregatedNews(
         a.region === "IN" ||
         (a.region && a.region.toLowerCase().includes("india")),
     );
-    // If filtering produced too few results, fall back to all results
+    // If region filtering produces fewer than MIN_FILTERED_RESULTS articles,
+    // fall back to showing all results rather than an empty/near-empty page.
     if (filtered.length < MIN_FILTERED_RESULTS) {
       filtered = deduped;
     }
