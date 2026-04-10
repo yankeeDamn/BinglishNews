@@ -1,35 +1,30 @@
 import { NextResponse } from "next/server";
 import type { GdeltArticle } from "@/types";
 
-interface CacheEntry {
-  data: GdeltArticle[];
-  timestamp: number;
+const GDELT_REQUEST_TIMEOUT_MS = 8000;
+const MAX_RECORDS_LIMIT = 250;
+const DEFAULT_MAX_RECORDS = 20;
+const ALLOWED_MODES = new Set(["ArtList", "TimelineVol", "TimelineVolNorm", "TimelineTone", "TimelineSourceCountry"]);
+
+function parseMaxRecords(value: string | null): number {
+  const parsed = parseInt(value || String(DEFAULT_MAX_RECORDS), 10);
+  return Math.min(Math.max(1, isNaN(parsed) ? DEFAULT_MAX_RECORDS : parsed), MAX_RECORDS_LIMIT);
 }
 
-const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
-const GDELT_REQUEST_TIMEOUT_MS = 8000;
-let cache: CacheEntry | null = null;
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const queryParam = searchParams.get("q") || "world news";
   const mode = searchParams.get("mode") || "ArtList";
-  const maxRecords = searchParams.get("max") || "20";
+  const maxRecords = String(parseMaxRecords(searchParams.get("max")));
   const format = "json";
 
-  // Return cached data if still fresh and same default query
-  if (
-    cache &&
-    Date.now() - cache.timestamp < CACHE_TTL_MS &&
-    queryParam === "world news"
-  ) {
+  // Validate mode parameter
+  if (!ALLOWED_MODES.has(mode)) {
     return NextResponse.json(
-      { articles: cache.data, fetchedAt: new Date(cache.timestamp).toISOString(), cached: true },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=900, stale-while-revalidate=60",
-        },
-      },
+      { error: `Invalid mode. Allowed: ${[...ALLOWED_MODES].join(", ")}` },
+      { status: 400 },
     );
   }
 
@@ -43,8 +38,8 @@ export async function GET(request: Request) {
     gdeltUrl.searchParams.set("mode", mode);
     gdeltUrl.searchParams.set("maxrecords", maxRecords);
     gdeltUrl.searchParams.set("format", format);
-    // Additional sourcelang URL parameter for extra filtering certainty
     gdeltUrl.searchParams.set("sourcelang", "eng");
+    gdeltUrl.searchParams.set("sort", "DateDesc");
 
     const controller = new AbortController();
     const timeout = setTimeout(
@@ -55,7 +50,6 @@ export async function GET(request: Request) {
     let res: Response;
     try {
       res = await fetch(gdeltUrl.toString(), {
-        next: { revalidate: 900 },
         signal: controller.signal,
       });
     } finally {
@@ -95,16 +89,11 @@ export async function GET(request: Request) {
         }),
       );
 
-    // Update in-memory cache for default query
-    if (queryParam === "world news") {
-      cache = { data: articles, timestamp: Date.now() };
-    }
-
     return NextResponse.json(
       { articles, fetchedAt: new Date().toISOString(), cached: false },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=900, stale-while-revalidate=60",
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
         },
       },
     );

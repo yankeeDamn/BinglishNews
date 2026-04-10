@@ -16,12 +16,14 @@ interface AuthState {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthState>({
   user: null,
   profile: null,
   loading: true,
+  error: null,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -31,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: null,
     profile: null,
     loading: configured,
+    error: null,
   });
 
   useEffect(() => {
@@ -43,12 +46,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (user) {
         try {
           const profile = await getUserProfile(user.uid);
-          setState({ user, profile, loading: false });
-        } catch {
-          setState({ user, profile: null, loading: false });
+          setState({ user, profile, loading: false, error: null });
+        } catch (err) {
+          console.error("Failed to load user profile:", err);
+          setState({
+            user,
+            profile: null,
+            loading: false,
+            error: "Failed to load user profile. Some features may be unavailable.",
+          });
         }
       } else {
-        setState({ user: null, profile: null, loading: false });
+        setState({ user: null, profile: null, loading: false, error: null });
       }
     });
     return unsub;

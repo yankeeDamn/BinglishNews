@@ -3,7 +3,7 @@ import type { Post } from "@/types";
 
 export default function PostCard({ post }: { post: Post }) {
   return (
-    <article className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <article className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#141414]">
       {post.imageUrl ? (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
@@ -12,22 +12,22 @@ export default function PostCard({ post }: { post: Post }) {
           className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
-        <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600">
-          <span className="text-5xl opacity-30">📰</span>
+        <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+          <span className="text-5xl opacity-20">📰</span>
         </div>
       )}
 
       <div className="flex flex-1 flex-col p-5">
         <Link href={`/posts/${post.id}`}>
-          <h3 className="mb-2 text-base font-bold leading-snug text-slate-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+          <h3 className="mb-2 text-base font-bold leading-snug text-white group-hover:text-gold transition">
             {post.title}
           </h3>
         </Link>
-        <p className="mb-4 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mb-4 line-clamp-2 text-sm text-[#888]">
           {post.summary}
         </p>
-        <div className="mt-auto flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-          <span className="font-medium text-slate-600 dark:text-slate-300">
+        <div className="mt-auto flex items-center justify-between text-xs text-[#666]">
+          <span className="font-medium text-[#aaa]">
             By {post.authorName}
           </span>
           <time dateTime={post.createdAt}>

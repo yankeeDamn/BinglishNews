@@ -5,25 +5,25 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: {
-    default: "BinglishNews – Community-Driven News Platform",
+    default: "BinglishNews – Modern News Platform",
     template: "%s | BinglishNews",
   },
   description:
-    "BinglishNews is a community-driven news platform featuring world news from GDELT and moderated user-generated content.",
-  keywords: ["news", "world news", "community news", "GDELT", "BinglishNews"],
+    "BinglishNews is a modern news platform featuring multi-source world news, Indian headlines, and moderated community content.",
+  keywords: ["news", "world news", "india news", "community news", "GDELT", "BinglishNews"],
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "BinglishNews",
-    title: "BinglishNews – Community-Driven News Platform",
+    title: "BinglishNews – Modern News Platform",
     description:
-      "World news and moderated user-generated content in one place.",
+      "Multi-source news aggregation with community stories.",
   },
   twitter: {
     card: "summary_large_image",
     title: "BinglishNews",
     description:
-      "World news and moderated user-generated content in one place.",
+      "Multi-source news aggregation with community stories.",
   },
   robots: { index: true, follow: true },
 };
@@ -34,16 +34,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased"
-    >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+    <html lang="en" className="h-full antialiased dark">
+      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-white">
         <AuthProvider>
           <Navbar />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-zinc-200 py-6 text-center text-xs text-zinc-500 dark:border-zinc-800">
-            © {new Date().getFullYear()} BinglishNews. All rights reserved.
+          <footer className="border-t border-[#2a2a2a] bg-[#0a0a0a] py-6 text-center text-xs text-[#888]">
+            <span className="text-gold-gradient font-semibold">BinglishNews</span>{" "}
+            © {new Date().getFullYear()}. All rights reserved.
           </footer>
         </AuthProvider>
       </body>

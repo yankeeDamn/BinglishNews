@@ -13,8 +13,12 @@ export default function PostDetailPage() {
   useEffect(() => {
     async function load() {
       if (!params.id) return;
-      const p = await getPostById(params.id);
-      setPost(p);
+      try {
+        const p = await getPostById(params.id);
+        setPost(p);
+      } catch {
+        // Post not found or Firestore not configured
+      }
       setLoading(false);
     }
     load();
@@ -23,14 +27,11 @@ export default function PostDetailPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <div className="h-8 w-2/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div className="mt-4 h-4 w-1/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="skeleton h-8 w-2/3 rounded" />
+        <div className="skeleton mt-4 h-4 w-1/3 rounded" />
         <div className="mt-8 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-4 w-full animate-pulse rounded bg-zinc-100 dark:bg-zinc-800"
-            />
+            <div key={i} className="skeleton h-4 w-full rounded" />
           ))}
         </div>
       </div>
@@ -40,7 +41,7 @@ export default function PostDetailPage() {
   if (!post || post.status !== "published") {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-zinc-500">Post not found or not yet published.</p>
+        <p className="text-[#888]">Post not found or not yet published.</p>
       </div>
     );
   }
@@ -55,10 +56,10 @@ export default function PostDetailPage() {
           className="mb-6 h-72 w-full rounded-xl object-cover"
         />
       )}
-      <h1 className="mb-3 text-3xl font-bold text-zinc-900 dark:text-white">
+      <h1 className="mb-3 text-3xl font-bold text-white">
         {post.title}
       </h1>
-      <div className="mb-6 flex items-center gap-3 text-sm text-zinc-500">
+      <div className="mb-6 flex items-center gap-3 text-sm text-[#888]">
         <span>By {post.authorName}</span>
         <span>·</span>
         <time dateTime={post.createdAt}>
@@ -69,10 +70,10 @@ export default function PostDetailPage() {
           })}
         </time>
       </div>
-      <p className="mb-6 text-lg text-zinc-600 dark:text-zinc-400 italic">
+      <p className="mb-6 text-lg text-[#aaa] italic">
         {post.summary}
       </p>
-      <div className="prose prose-zinc max-w-none dark:prose-invert whitespace-pre-wrap">
+      <div className="prose prose-invert max-w-none whitespace-pre-wrap text-[#ccc]">
         {post.content}
       </div>
     </article>
