@@ -3,7 +3,13 @@ import type { GdeltArticle } from "@/types";
 
 const GDELT_REQUEST_TIMEOUT_MS = 8000;
 const MAX_RECORDS_LIMIT = 250;
+const DEFAULT_MAX_RECORDS = 20;
 const ALLOWED_MODES = new Set(["ArtList", "TimelineVol", "TimelineVolNorm", "TimelineTone", "TimelineSourceCountry"]);
+
+function parseMaxRecords(value: string | null): number {
+  const parsed = parseInt(value || String(DEFAULT_MAX_RECORDS), 10);
+  return Math.min(Math.max(1, isNaN(parsed) ? DEFAULT_MAX_RECORDS : parsed), MAX_RECORDS_LIMIT);
+}
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +17,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const queryParam = searchParams.get("q") || "world news";
   const mode = searchParams.get("mode") || "ArtList";
-  const maxRecordsRaw = parseInt(searchParams.get("max") || "20", 10);
-  const maxRecords = String(Math.min(Math.max(1, isNaN(maxRecordsRaw) ? 20 : maxRecordsRaw), MAX_RECORDS_LIMIT));
+  const maxRecords = String(parseMaxRecords(searchParams.get("max")));
   const format = "json";
 
   // Validate mode parameter

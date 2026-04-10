@@ -122,8 +122,7 @@ export async function fetchAggregatedNews(
         a.region === "IN" ||
         (a.region && a.region.toLowerCase().includes("india")),
     );
-    // If region filtering produces fewer than MIN_FILTERED_RESULTS articles,
-    // fall back to showing all results rather than an empty/near-empty page.
+    // Fall back to all results if the region filter yields too few articles
     if (filtered.length < MIN_FILTERED_RESULTS) {
       filtered = deduped;
     }
