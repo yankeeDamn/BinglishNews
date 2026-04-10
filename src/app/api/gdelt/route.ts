@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const queryParam = searchParams.get("q") || "world news";
   const mode = searchParams.get("mode") || "ArtList";
   const maxRecordsRaw = parseInt(searchParams.get("max") || "20", 10);
-  const maxRecords = String(Math.min(Math.max(1, maxRecordsRaw || 20), MAX_RECORDS_LIMIT));
+  const maxRecords = String(Math.min(Math.max(1, isNaN(maxRecordsRaw) ? 20 : maxRecordsRaw), MAX_RECORDS_LIMIT));
   const format = "json";
 
   // Validate mode parameter

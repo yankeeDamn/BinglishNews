@@ -43,7 +43,9 @@ async function parseFeed(feed: FeedConfig): Promise<Article[]> {
         item.enclosure?.url ??
         (item["media:content"] as { $?: { url?: string } } | undefined)?.$?.url ??
         "",
-      source: extractHostname(feed.url).replace("feeds.", "").replace("rss.", ""),
+      source: item.link
+        ? extractHostname(item.link)
+        : extractHostname(feed.url).replace("feeds.", "").replace("rss.", ""),
       provider: "rss",
       region: feed.region,
       category: feed.category,

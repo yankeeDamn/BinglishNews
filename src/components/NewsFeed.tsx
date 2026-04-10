@@ -121,6 +121,7 @@ export default function NewsFeed({
   };
 
   const hasNextPage = page * pageSize < total;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <section id={id} className="space-y-6">
@@ -233,8 +234,8 @@ export default function NewsFeed({
             >
               ← Previous
             </button>
-            <span className="text-sm text-[#888]">
-              Page {page}
+            <span className="text-sm text-[#888]" aria-live="polite">
+              Page {page} of {totalPages}
             </span>
             <button
               disabled={!hasNextPage}
