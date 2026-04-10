@@ -110,16 +110,17 @@ export async function fetchAggregatedNews(
   const deduped = deduplicateArticles(allArticles);
 
   // Filter by region/category if specified
+  const MIN_FILTERED_RESULTS = 3;
   let filtered = deduped;
   if (region === "IN" || category === "india") {
     filtered = deduped.filter(
       (a) =>
         a.category === "india" ||
         a.region === "IN" ||
-        a.region.toLowerCase().includes("india"),
+        (a.region && a.region.toLowerCase().includes("india")),
     );
     // If filtering produced too few results, fall back to all results
-    if (filtered.length < 3) {
+    if (filtered.length < MIN_FILTERED_RESULTS) {
       filtered = deduped;
     }
   }

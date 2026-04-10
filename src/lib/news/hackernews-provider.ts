@@ -57,7 +57,9 @@ export class HackerNewsProvider implements NewsProvider {
             ? new Date(item.time * 1000).toISOString()
             : new Date().toISOString(),
           imageUrl: "",
-          source: item.url ? new URL(item.url).hostname : "news.ycombinator.com",
+          source: (() => {
+            try { return new URL(item.url).hostname; } catch { return "news.ycombinator.com"; }
+          })(),
           provider: "hackernews",
           region: "",
           category: "tech",

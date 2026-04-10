@@ -42,7 +42,9 @@ async function parseFeed(feed: FeedConfig): Promise<Article[]> {
         item.enclosure?.url ??
         (item["media:content"] as { $?: { url?: string } } | undefined)?.$?.url ??
         "",
-      source: new URL(feed.url).hostname.replace("feeds.", "").replace("rss.", ""),
+      source: (() => {
+        try { return new URL(feed.url).hostname.replace("feeds.", "").replace("rss.", ""); } catch { return "unknown"; }
+      })(),
       provider: "rss",
       region: feed.region,
       category: feed.category,

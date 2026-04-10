@@ -2,6 +2,7 @@ import type { Article } from "@/types";
 import type { NewsProvider, FetchOptions } from "./provider";
 
 const GDELT_TIMEOUT_MS = 8_000;
+const ROLLING_WINDOW_MS = 48 * 60 * 60 * 1000; // 48 hours
 
 /**
  * Parse GDELT seendate format (YYYYMMDDTHHMMSSZ) to ISO-8601.
@@ -61,7 +62,7 @@ export class GdeltProvider implements NewsProvider {
 
     // Rolling 48-hour window
     const now = new Date();
-    const start = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    const start = new Date(now.getTime() - ROLLING_WINDOW_MS);
     const fmt = (d: Date) =>
       d.toISOString().replace(/[-:T]/g, "").slice(0, 14);
     url.searchParams.set("startdatetime", fmt(start));

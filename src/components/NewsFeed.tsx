@@ -86,12 +86,14 @@ export default function NewsFeed({
         params.set("q", search.trim());
       }
       const res = await fetch(`/api/news?${params.toString()}`);
+      if (!res.ok) {
+        setError("Could not load news. Please try again later.");
+        return;
+      }
       const data = await res.json();
       if (data.articles && data.articles.length > 0) {
         setArticles(data.articles);
         setTotal(data.total ?? 0);
-      } else if (!res.ok) {
-        setError("Could not load news. Please try again later.");
       } else {
         setArticles([]);
         setTotal(0);
