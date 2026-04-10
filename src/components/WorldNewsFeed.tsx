@@ -43,10 +43,7 @@ export default function WorldNewsFeed() {
     return (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-64 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800"
-          />
+          <div key={i} className="skeleton h-64 rounded-2xl" />
         ))}
       </div>
     );
@@ -54,15 +51,15 @@ export default function WorldNewsFeed() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center dark:border-red-900/30 dark:bg-red-900/10">
-        <p className="text-red-600 dark:text-red-400">{error}</p>
+      <div className="rounded-2xl border border-red-900/30 bg-red-900/10 p-6 text-center">
+        <p className="text-red-400">{error}</p>
       </div>
     );
   }
 
   if (articles.length === 0) {
     return (
-      <p className="text-center text-slate-500 dark:text-slate-400">
+      <p className="text-center text-[#888]">
         No world news available right now. Check back soon.
       </p>
     );
@@ -76,7 +73,7 @@ export default function WorldNewsFeed() {
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
+          className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#141414]"
         >
           {article.socialimage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -86,19 +83,19 @@ export default function WorldNewsFeed() {
               className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-700 dark:to-slate-600">
-              <span className="text-4xl opacity-40">🌐</span>
+            <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+              <span className="text-4xl opacity-30">🌐</span>
             </div>
           )}
 
           <div className="flex flex-1 flex-col p-4">
-            <h4 className="mb-3 line-clamp-3 text-sm font-semibold leading-snug text-slate-900 group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+            <h4 className="mb-3 line-clamp-3 text-sm font-semibold leading-snug text-white group-hover:text-gold transition">
               {article.title}
             </h4>
 
-            <div className="mt-auto flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-auto flex items-center justify-between gap-2 text-xs text-[#666]">
               <div className="flex items-center gap-1.5 overflow-hidden">
-                <span className="truncate font-medium text-slate-700 dark:text-slate-300">
+                <span className="truncate font-medium text-[#aaa]">
                   {article.domain}
                 </span>
                 {article.sourcecountry && (

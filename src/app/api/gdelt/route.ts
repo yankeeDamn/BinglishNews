@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
 import type { GdeltArticle } from "@/types";
 
-interface CacheEntry {
-  data: GdeltArticle[];
-  timestamp: number;
-}
-
-const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 const GDELT_REQUEST_TIMEOUT_MS = 8000;
-let cache: CacheEntry | null = null;
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -16,22 +11,6 @@ export async function GET(request: Request) {
   const mode = searchParams.get("mode") || "ArtList";
   const maxRecords = searchParams.get("max") || "20";
   const format = "json";
-
-  // Return cached data if still fresh and same default query
-  if (
-    cache &&
-    Date.now() - cache.timestamp < CACHE_TTL_MS &&
-    queryParam === "world news"
-  ) {
-    return NextResponse.json(
-      { articles: cache.data, fetchedAt: new Date(cache.timestamp).toISOString(), cached: true },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=900, stale-while-revalidate=60",
-        },
-      },
-    );
-  }
 
   try {
     const gdeltUrl = new URL("https://api.gdeltproject.org/api/v2/doc/doc");
@@ -43,8 +22,8 @@ export async function GET(request: Request) {
     gdeltUrl.searchParams.set("mode", mode);
     gdeltUrl.searchParams.set("maxrecords", maxRecords);
     gdeltUrl.searchParams.set("format", format);
-    // Additional sourcelang URL parameter for extra filtering certainty
     gdeltUrl.searchParams.set("sourcelang", "eng");
+    gdeltUrl.searchParams.set("sort", "DateDesc");
 
     const controller = new AbortController();
     const timeout = setTimeout(
@@ -55,7 +34,6 @@ export async function GET(request: Request) {
     let res: Response;
     try {
       res = await fetch(gdeltUrl.toString(), {
-        next: { revalidate: 900 },
         signal: controller.signal,
       });
     } finally {
@@ -95,16 +73,11 @@ export async function GET(request: Request) {
         }),
       );
 
-    // Update in-memory cache for default query
-    if (queryParam === "world news") {
-      cache = { data: articles, timestamp: Date.now() };
-    }
-
     return NextResponse.json(
       { articles, fetchedAt: new Date().toISOString(), cached: false },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=900, stale-while-revalidate=60",
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
         },
       },
     );
