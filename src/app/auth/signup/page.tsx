@@ -46,7 +46,7 @@ export default function SignUpPage() {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: displayName.trim() });
       await createUserProfile(cred.user.uid, email, displayName.trim());
-      router.push("/");
+      router.push("/posts/new");
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code ?? "";
       setError(friendlyAuthError(code));

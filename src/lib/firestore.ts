@@ -149,3 +149,47 @@ export async function getUserPosts(uid: string): Promise<Post[]> {
   const snap = await getDocs(q);
   return snap.docs.map((d) => toPost(d.id, d.data()));
 }
+
+export async function getUserPostsByStatuses(
+  uid: string,
+  statuses: PostStatus[],
+): Promise<Post[]> {
+  if (statuses.length === 0) return [];
+  const posts = await getUserPosts(uid);
+  const allow = new Set(statuses);
+  return posts.filter((post) => allow.has(post.status));
+}
+
+export async function updateOwnPendingPost(
+  postId: string,
+  authorId: string,
+  updates: {
+    title: string;
+    summary: string;
+    content: string;
+    imageUrl: string | null;
+  },
+): Promise<void> {
+  const db = requireDb();
+  const postRef = doc(db, "posts", postId);
+  const snap = await getDoc(postRef);
+  if (!snap.exists()) {
+    throw new Error("Post not found");
+  }
+
+  const data = snap.data() as Partial<Post>;
+  if (data.authorId !== authorId) {
+    throw new Error("You can only edit your own posts");
+  }
+  if (data.status !== "pending") {
+    throw new Error("Only pending posts can be edited");
+  }
+
+  await updateDoc(postRef, {
+    title: updates.title,
+    summary: updates.summary,
+    content: updates.content,
+    imageUrl: updates.imageUrl,
+    updatedAt: serverTimestamp(),
+  });
+}

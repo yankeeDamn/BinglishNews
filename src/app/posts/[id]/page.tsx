@@ -1,12 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { getPostById } from "@/lib/firestore";
 import type { Post } from "@/types";
 
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>();
+  const { user, profile, loading: authLoading } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +27,7 @@ export default function PostDetailPage() {
     load();
   }, [params.id]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
         <div className="skeleton h-8 w-2/3 rounded" />
@@ -38,16 +41,41 @@ export default function PostDetailPage() {
     );
   }
 
-  if (!post || post.status !== "published") {
+  if (!post) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-[#888]">Post not found or not yet published.</p>
+        <p className="text-[#888]">Post not found.</p>
+      </div>
+    );
+  }
+
+  const isAuthor = Boolean(user && post.authorId === user.uid);
+  const isAdmin = profile?.role === "admin";
+  const canView = post.status === "published" || isAuthor || isAdmin;
+
+  if (!canView) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2">
+        <p className="text-[#888]">
+          This post is not publicly available.
+        </p>
+        {!user && (
+          <Link href="/auth/signin" className="text-gold hover:underline">
+            Sign In
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
+      {post.status !== "published" && (
+        <div className="mb-6 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold">
+          This post is currently <strong>{post.status}</strong> and visible to you because you{" "}
+          {isAdmin ? "are an admin" : "are the author"}.
+        </div>
+      )}
       {post.imageUrl && (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
@@ -69,6 +97,14 @@ export default function PostDetailPage() {
             day: "numeric",
           })}
         </time>
+        {isAuthor && post.status === "pending" && (
+          <>
+            <span>·</span>
+            <Link href={`/posts/${post.id}/edit`} className="text-gold hover:underline">
+              Edit
+            </Link>
+          </>
+        )}
       </div>
       <p className="mb-6 text-lg text-[#aaa] italic">
         {post.summary}

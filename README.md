@@ -8,6 +8,8 @@ A modern, multi-source news aggregation platform built with **Next.js 16 (App Ro
 - 🇮🇳 **Dedicated India Feed** — India-focused RSS feeds (BBC India, Times of India, The Hindu) with GDELT region filtering
 - ✍️ **Community Posts** — Authenticated users submit news posts; admin moderation required for publishing
 - 🛡️ **Admin Moderation** — Posts start as `pending`; admin dashboard at `/admin` for approve/reject workflow
+- 🗂️ **My Posts Dashboard** — Authors track `pending` / `published` / `rejected` posts at `/posts/mine`
+- ✏️ **Pending Post Editing** — Authors can edit only their own `pending` posts at `/posts/[id]/edit`
 - 🔐 **Firebase Auth** — Email/password authentication with friendly error messages and Firestore user profiles
 - 🖼️ **Image Uploads** — Firebase Storage with 5 MB limit and image-only validation
 - 🔍 **Search + Filters** — Category tabs (All / World / India / Tech), search bar, and pagination
@@ -151,9 +153,17 @@ To add a new source: implement `NewsProvider`, add to `providers[]` in `aggregat
 ## Moderation Flow
 
 1. User creates a post → saved with `status: "pending"`
-2. Admin sees pending posts in `/admin` dashboard
-3. Admin approves → `status: "published"` (appears on home page)
-4. Admin rejects → `status: "rejected"` (hidden from public)
+2. Author can review/manage own posts in `/posts/mine`
+3. Author can edit only own `pending` posts
+4. Admin sees pending posts in `/admin` dashboard
+5. Admin approves → `status: "published"` (appears on home page)
+6. Admin rejects → `status: "rejected"` (hidden from public)
+
+## Role-based Access
+
+- **Public visitors**: can read only `published` posts.
+- **Signed-in authors**: can create posts, see all of their own posts, and edit only their own `pending` posts.
+- **Admins**: can view all posts, and moderate posts to `published` or `rejected`.
 
 ## Setting Up an Admin User
 
