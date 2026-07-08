@@ -63,6 +63,7 @@ export default function EditPostPage() {
 
   const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+    setError(null);
     if (file && file.size > 5 * 1024 * 1024) {
       setError("Image must be under 5 MB");
       return;

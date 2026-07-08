@@ -59,9 +59,11 @@ export default function PostDetailPage() {
         <p className="text-[#888]">
           This post is not publicly available.
         </p>
-        <Link href="/auth/signin" className="text-gold hover:underline">
-          Sign In
-        </Link>
+        {!user && (
+          <Link href="/auth/signin" className="text-gold hover:underline">
+            Sign In
+          </Link>
+        )}
       </div>
     );
   }
