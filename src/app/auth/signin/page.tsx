@@ -37,7 +37,7 @@ export default function SignInPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
+      router.push("/posts/new");
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code ?? "";
       setError(friendlyAuthError(code));

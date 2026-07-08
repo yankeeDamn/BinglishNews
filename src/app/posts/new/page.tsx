@@ -16,6 +16,7 @@ export default function NewPostPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [statusText, setStatusText] = useState<string | null>(null);
 
   if (authLoading) {
     return (
@@ -40,6 +41,7 @@ export default function NewPostPage() {
 
   const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+    setError(null);
     if (file && file.size > 5 * 1024 * 1024) {
       setError("Image must be under 5 MB");
       return;
@@ -50,6 +52,7 @@ export default function NewPostPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setStatusText(null);
 
     if (title.trim().length < 3) {
       setError("Title must be at least 3 characters.");
@@ -69,9 +72,11 @@ export default function NewPostPage() {
     try {
       let imageUrl: string | null = null;
       if (imageFile) {
+        setStatusText("Uploading image…");
         imageUrl = await uploadPostImage(imageFile, user.uid);
       }
 
+      setStatusText("Submitting post for moderation…");
       await createPost({
         title: title.trim(),
         summary: summary.trim(),
@@ -81,9 +86,10 @@ export default function NewPostPage() {
         authorName: profile.displayName,
       });
 
-      router.push("/");
+      router.push("/posts/mine");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create post");
+      setStatusText(null);
     } finally {
       setSubmitting(false);
     }
@@ -103,6 +109,12 @@ export default function NewPostPage() {
       {error && (
         <div className="mb-4 rounded-lg border border-red-900/30 bg-red-900/10 p-3 text-sm text-red-400">
           {error}
+        </div>
+      )}
+
+      {statusText && (
+        <div className="mb-4 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold">
+          {statusText}
         </div>
       )}
 

@@ -133,6 +133,14 @@ function AuthButtons({
         >
           Write Post
         </Link>
+        {profile?.role !== "admin" && (
+          <Link
+            href="/posts/mine"
+            className="font-medium text-[#ccc] transition hover:text-gold"
+          >
+            My Posts
+          </Link>
+        )}
         {profile?.role === "admin" && (
           <Link
             href="/admin"
