@@ -4,20 +4,32 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getPendingPosts, moderatePost } from "@/lib/firestore";
 import type { Post } from "@/types";
+import RequireAuth from "@/components/RequireAuth";
 
-export default function AdminDashboard() {
-  const { user, profile, loading: authLoading } = useAuth();
+export default function AdminPage() {
+  return (
+    <RequireAuth admin>
+      <AdminDashboard />
+    </RequireAuth>
+  );
+}
+
+function AdminDashboard() {
+  const { user, profile } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const pending = await getPendingPosts();
       setPosts(pending);
     } catch (err) {
       console.error("Failed to load pending posts:", err);
+      setError("Couldn't load pending posts. Check your connection and Firestore rules, then retry.");
     }
     setLoading(false);
   }, []);
@@ -28,23 +40,7 @@ export default function AdminDashboard() {
     }
   }, [profile, loadPosts]);
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-[#888]">Loading…</p>
-      </div>
-    );
-  }
-
-  if (!user || profile?.role !== "admin") {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="font-medium text-red-400">
-          Access denied. Admin privileges required.
-        </p>
-      </div>
-    );
-  }
+  if (!user) return null; // RequireAuth guarantees an admin user.
 
   const handleModerate = async (
     postId: string,
@@ -56,6 +52,7 @@ export default function AdminDashboard() {
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     } catch (err) {
       console.error("Moderation error:", err);
+      setError("That action failed. Please try again.");
     } finally {
       setActionId(null);
     }
@@ -66,6 +63,15 @@ export default function AdminDashboard() {
       <h1 className="mb-6 text-2xl font-bold text-white">
         Moderation Dashboard
       </h1>
+
+      {error && (
+        <div role="alert" className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-red-900/40 bg-red-900/10 p-3 text-sm text-red-300">
+          <span>{error}</span>
+          <button onClick={loadPosts} className="shrink-0 rounded bg-red-900/30 px-3 py-1 hover:bg-red-900/50">
+            Retry
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-4">

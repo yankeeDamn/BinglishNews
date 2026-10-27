@@ -1,102 +1,118 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { friendlyAuthError, safeRedirect } from "@/lib/auth-errors";
+import {
+  AuthShell,
+  Divider,
+  FormAlert,
+  GoogleButton,
+  PasswordField,
+  SubmitButton,
+  TextField,
+} from "@/components/auth/AuthUI";
 
-function friendlyAuthError(code: string): string {
-  switch (code) {
-    case "auth/user-not-found":
-      return "No account found with this email.";
-    case "auth/wrong-password":
-    case "auth/invalid-credential":
-      return "Incorrect email or password.";
-    case "auth/too-many-requests":
-      return "Too many attempts. Please wait a moment and try again.";
-    case "auth/network-request-failed":
-      return "Network error. Check your connection and try again.";
-    case "auth/invalid-email":
-      return "Please enter a valid email address.";
-    default:
-      return "Sign-in failed. Please try again.";
-  }
-}
+function SignInForm() {
+  const { user, loading: authLoading, configured, signIn, signInWithGoogle } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeRedirect(searchParams.get("next"));
 
-export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  // Once Firebase reports a signed-in user (from this form or an existing
+  // session), leave the auth pages.
+  useEffect(() => {
+    if (!authLoading && user) router.replace(next);
+  }, [authLoading, user, next, router]);
+
+  const run = async (action: () => Promise<void>) => {
     setError(null);
-    setLoading(true);
+    setBusy(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
-    } catch (err: unknown) {
-      const code = (err as { code?: string })?.code ?? "";
-      setError(friendlyAuthError(code));
-    } finally {
-      setLoading(false);
+      await action();
+    } catch (err) {
+      console.error("Sign-in error:", err);
+      setError(friendlyAuthError(err, "sign-in"));
+      setBusy(false);
     }
   };
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    return run(() => signIn(email, password));
+  };
+
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4">
-      <h1 className="mb-6 text-center text-2xl font-bold text-white">
-        Sign In
-      </h1>
-
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-900/30 bg-red-900/10 p-3 text-sm text-red-400">
-          {error}
-        </div>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to write posts and join the conversation."
+      footer={
+        <>
+          New to BinglishNews?{" "}
+          <Link
+            href={next === "/" ? "/auth/signup" : `/auth/signup?next=${encodeURIComponent(next)}`}
+            className="text-gold hover:underline"
+          >
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      {!configured && (
+        <FormAlert>
+          Sign-in is unavailable: the site&apos;s Firebase configuration is missing.
+        </FormAlert>
       )}
+      {error && <FormAlert>{error}</FormAlert>}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#ccc]">
-          Email
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2 text-white outline-none transition focus:border-gold focus:ring-1 focus:ring-gold"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#ccc]">
-          Password
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2 text-white outline-none transition focus:border-gold focus:ring-1 focus:ring-gold"
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-gold py-2.5 font-semibold text-black transition hover:bg-gold-light disabled:opacity-50"
-        >
-          {loading ? "Signing in…" : "Sign In"}
-        </button>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate={false}>
+        <TextField
+          label="Email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          inputMode="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={busy}
+        />
+        <PasswordField
+          label="Password"
+          name="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={busy}
+          labelAside={
+            <Link href="/auth/forgot-password" className="text-xs text-gold hover:underline">
+              Forgot password?
+            </Link>
+          }
+        />
+        <SubmitButton loading={busy || (!!user && !authLoading)} loadingText="Signing in…">
+          Sign In
+        </SubmitButton>
       </form>
 
-      <p className="mt-4 text-center text-sm text-[#888]">
-        Don&apos;t have an account?{" "}
-        <Link href="/auth/signup" className="text-gold hover:underline">
-          Sign Up
-        </Link>
-      </p>
-    </div>
+      <Divider />
+      <GoogleButton onClick={() => run(signInWithGoogle)} disabled={busy || !configured} />
+    </AuthShell>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }

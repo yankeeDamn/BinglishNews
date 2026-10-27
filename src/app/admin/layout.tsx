@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Moderation Dashboard | BinglishNews",
+  title: "Moderation Dashboard",
   description: "Admin moderation dashboard for reviewing and approving user-submitted news posts.",
 };
 

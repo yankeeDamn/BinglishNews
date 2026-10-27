@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Create Post | BinglishNews",
+  title: "Create Post",
   description: "Write and submit a news post for review on BinglishNews.",
 };
 

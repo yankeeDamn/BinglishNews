@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import type { Article } from "@/types";
 
 type Category = "all" | "world" | "india" | "tech";
@@ -23,6 +23,20 @@ function formatDate(iso: string): string {
         year: "numeric",
         timeZone: "UTC",
       });
+}
+
+function timeAgo(iso: string): string {
+  if (!iso) return "";
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return "";
+  const mins = Math.round((Date.now() - t) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(iso);
 }
 
 function SkeletonGrid() {
@@ -61,53 +75,60 @@ export default function NewsFeed({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<Category>(initialCategory);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [reloadKey, setReloadKey] = useState(0);
   const pageSize = 12;
-
-  const fetchNews = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-      });
-      if (category === "india") {
-        params.set("region", "IN");
-        params.set("category", "india");
-      } else if (category === "tech") {
-        params.set("category", "tech");
-      } else if (category === "world") {
-        params.set("category", "world");
-      }
-      if (search.trim()) {
-        params.set("q", search.trim());
-      }
-      const res = await fetch(`/api/news?${params.toString()}`);
-      if (!res.ok) {
-        setError("Could not load news. Please try again later.");
-        return;
-      }
-      const data = await res.json();
-      if (data.articles && data.articles.length > 0) {
-        setArticles(data.articles);
-        setTotal(data.total ?? 0);
-      } else {
-        setArticles([]);
-        setTotal(0);
-      }
-    } catch {
-      setError("Could not load news. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  }, [category, page, search]);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    fetchNews();
-  }, [fetchNews]);
+    // Cancel any in-flight request so a slow, stale response can never
+    // overwrite the results for the current category/page/search.
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          pageSize: String(pageSize),
+        });
+        if (category === "india") {
+          params.set("region", "IN");
+          params.set("category", "india");
+        } else if (category === "tech") {
+          params.set("category", "tech");
+        } else if (category === "world") {
+          params.set("category", "world");
+        }
+        if (search) params.set("q", search);
+
+        const res = await fetch(`/api/news?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`News request failed (${res.status})`);
+        const data = await res.json();
+        setArticles(Array.isArray(data.articles) ? data.articles : []);
+        setTotal(data.total ?? 0);
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        console.error(err);
+        setError("Could not load news. Please try again later.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+    load();
+
+    return () => controller.abort();
+  }, [category, page, search, reloadKey]);
+
+  const fetchNews = useCallback(() => setReloadKey((k) => k + 1), []);
 
   const handleCategoryChange = (cat: Category) => {
     setCategory(cat);
@@ -117,7 +138,7 @@ export default function NewsFeed({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    fetchNews();
+    setSearch(searchInput.trim().slice(0, 100));
   };
 
   const hasNextPage = page * pageSize < total;
@@ -131,6 +152,7 @@ export default function NewsFeed({
           <button
             key={cat.key}
             onClick={() => handleCategoryChange(cat.key)}
+            aria-pressed={category === cat.key}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
               category === cat.key
                 ? "bg-gold text-black shadow-md"
@@ -143,12 +165,14 @@ export default function NewsFeed({
       </div>
 
       {/* Search bar */}
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form onSubmit={handleSearch} className="flex gap-2" role="search">
         <input
           type="search"
+          aria-label="Search news"
           placeholder="Search news..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          maxLength={100}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="flex-1 rounded-xl border border-[#2a2a2a] bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-[#666] outline-none transition focus:border-gold focus:ring-1 focus:ring-gold"
         />
         <button
@@ -163,7 +187,7 @@ export default function NewsFeed({
       {loading ? (
         <SkeletonGrid />
       ) : error ? (
-        <div className="rounded-2xl border border-red-900/30 bg-red-900/10 p-6 text-center">
+        <div role="alert" className="rounded-2xl border border-red-900/30 bg-red-900/10 p-6 text-center">
           <p className="text-red-400">{error}</p>
           <button
             onClick={fetchNews}
@@ -191,9 +215,13 @@ export default function NewsFeed({
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={article.imageUrl}
-                    alt={article.title}
+                    alt=""
                     className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.style.visibility = "hidden";
+                    }}
                   />
                 ) : (
                   <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
@@ -214,10 +242,14 @@ export default function NewsFeed({
                       {article.source}
                     </span>
                     <ProviderBadge provider={article.provider} />
-                    {article.publishedAt && (
-                      <span className="ml-auto shrink-0">
-                        {formatDate(article.publishedAt)}
-                      </span>
+                    {article.publishedAt && timeAgo(article.publishedAt) && (
+                      <time
+                        dateTime={article.publishedAt}
+                        title={formatDate(article.publishedAt)}
+                        className="ml-auto shrink-0"
+                      >
+                        {timeAgo(article.publishedAt)}
+                      </time>
                     )}
                   </div>
                 </div>
