@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { BookmarkProvider } from "@/context/BookmarkContext";
 import Logo from "@/components/Logo";
 import Navbar from "@/components/Navbar";
 import { getSiteUrl } from "@/lib/site";
@@ -54,6 +55,7 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-full flex-col">
         <AuthProvider>
+        <BookmarkProvider>
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-accent-ink"
@@ -94,6 +96,7 @@ export default function RootLayout({
               © {new Date().getFullYear()} BinglishNews. Headlines link to their original publishers.
             </p>
           </footer>
+        </BookmarkProvider>
         </AuthProvider>
       </body>
     </html>

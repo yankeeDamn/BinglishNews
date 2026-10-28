@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
+import BookmarksDrawer from "@/components/catalog/BookmarksDrawer";
+import { useBookmarks } from "@/context/BookmarkContext";
 
 const NAV_LINKS = [
   { href: "/#news", label: "News" },
@@ -16,6 +18,8 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
+  const { bookmarks } = useBookmarks();
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
   const pathname = usePathname();
 
   // The menu counts as "open" only on the route it was opened from, so any
@@ -49,6 +53,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-1.5">
+          <button onClick={() => setBookmarksOpen(true)} aria-label={`Saved stories, ${bookmarks.length}`} className="flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold transition hover:bg-sunken"><span aria-hidden="true">♡</span><span className="hidden sm:inline">Saved</span><span className="rounded-full bg-sunken px-1.5 text-xs">{bookmarks.length}</span></button>
           <ThemeToggle />
           <div className="hidden items-center gap-4 pl-2 text-sm md:flex">
             <AuthButtons {...authProps} />
@@ -88,6 +93,7 @@ export default function Navbar() {
           </div>
         </div>
       )}
+      <BookmarksDrawer open={bookmarksOpen} onClose={() => setBookmarksOpen(false)} />
     </header>
   );
 }

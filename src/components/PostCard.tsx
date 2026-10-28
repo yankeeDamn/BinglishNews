@@ -1,10 +1,13 @@
+"use client";
 import Link from "next/link";
+import { postKey, useBookmarks } from "@/context/BookmarkContext";
 import ArticleImage from "@/components/ArticleImage";
 import { formatDate } from "@/lib/format";
 import type { Post } from "@/types";
 
 export default function PostCard({ post }: { post: Post }) {
   const date = formatDate(post.createdAt);
+  const { has, togglePost } = useBookmarks();
   return (
     <article className="group relative flex h-full flex-col">
       <div className="overflow-hidden rounded-md">
@@ -32,6 +35,7 @@ export default function PostCard({ post }: { post: Post }) {
       <p className="mt-2 line-clamp-2 text-[15px] leading-relaxed text-muted">
         {post.summary}
       </p>
+      <button type="button" onClick={() => togglePost(post)} className="relative z-10 mt-3 self-start text-sm font-semibold text-accent-text">{has(postKey(post)) ? "Saved ✓" : "Save story +"}</button>
     </article>
   );
 }
