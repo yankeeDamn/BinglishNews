@@ -5,7 +5,6 @@ import { extractHostname } from "./utils";
 const HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json";
 const HN_ITEM_URL = (id: number) =>
   `https://hacker-news.firebaseio.com/v0/item/${id}.json`;
-const HN_TIMEOUT_MS = 8_000;
 
 interface HnItem {
   id: number;
@@ -22,11 +21,8 @@ export class HackerNewsProvider implements NewsProvider {
   async fetch(options: FetchOptions): Promise<Article[]> {
     const { page = 1, pageSize = 20 } = options;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), HN_TIMEOUT_MS);
-
-    try {
-      const res = await fetch(HN_TOP_URL, { signal: controller.signal });
+    {
+      const res = await fetch(HN_TOP_URL, { signal: options.signal });
       if (!res.ok) return [];
       const ids: number[] = await res.json();
 
@@ -37,7 +33,7 @@ export class HackerNewsProvider implements NewsProvider {
       const items = await Promise.allSettled(
         selectedIds.map(async (id) => {
           const r = await fetch(HN_ITEM_URL(id), {
-            signal: controller.signal,
+            signal: options.signal,
           });
           if (!r.ok) return null;
           return (await r.json()) as HnItem;
@@ -66,8 +62,6 @@ export class HackerNewsProvider implements NewsProvider {
       }
 
       return articles;
-    } finally {
-      clearTimeout(timeout);
     }
   }
 }

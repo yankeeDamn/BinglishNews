@@ -4,11 +4,6 @@ import RssParser from "rss-parser";
 import { extractHostname } from "./utils";
 
 const parser = new RssParser({
-  timeout: 8_000,
-  headers: {
-    "User-Agent": "BinglishNews/1.0",
-    Accept: "application/rss+xml, application/xml, text/xml",
-  },
 });
 
 interface FeedConfig {
@@ -31,9 +26,11 @@ const INDIA_FEEDS: FeedConfig[] = [
   { url: "https://www.thehindu.com/news/national/feeder/default.rss", category: "india", region: "IN" },
 ];
 
-async function parseFeed(feed: FeedConfig): Promise<Article[]> {
+async function parseFeed(feed: FeedConfig, signal?: AbortSignal): Promise<Article[]> {
   try {
-    const result = await parser.parseURL(feed.url);
+    const response = await fetch(feed.url, { signal, headers: { "User-Agent": "BinglishNews/1.0", Accept: "application/rss+xml, application/xml, text/xml" } });
+    if (!response.ok) return [];
+    const result = await parser.parseString(await response.text());
     return (result.items ?? []).map((item) => ({
       url: item.link ?? "",
       title: (item.title ?? "").trim(),
@@ -64,7 +61,7 @@ export class RssProvider implements NewsProvider {
 
     const feeds = region === "IN" ? INDIA_FEEDS : WORLD_FEEDS;
 
-    const results = await Promise.allSettled(feeds.map(parseFeed));
+    const results = await Promise.allSettled(feeds.map((feed) => parseFeed(feed, options.signal)));
     const articles: Article[] = [];
 
     for (const r of results) {

@@ -156,6 +156,7 @@ function AuthButtons({
             Admin
           </Link>
         )}
+        <Link href="/posts/mine" className="font-medium text-muted transition hover:text-ink">My stories</Link>
         <button
           onClick={onSignOut}
           className="text-left font-medium text-muted transition hover:text-ink"

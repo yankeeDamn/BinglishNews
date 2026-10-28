@@ -1,6 +1,7 @@
 import type { Article } from "@/types";
 
 export interface FetchOptions {
+  signal?: AbortSignal;
   query?: string;
   region?: string;
   category?: string;

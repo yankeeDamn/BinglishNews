@@ -149,3 +149,13 @@ export async function getUserPosts(uid: string): Promise<Post[]> {
   const snap = await getDocs(q);
   return snap.docs.map((d) => toPost(d.id, d.data()));
 }
+
+export async function updatePendingPost(
+  id: string,
+  changes: Pick<Post, "title" | "summary" | "content" | "imageUrl">,
+): Promise<void> {
+  await updateDoc(doc(requireDb(), "posts", id), {
+    ...changes,
+    updatedAt: serverTimestamp(),
+  });
+}
