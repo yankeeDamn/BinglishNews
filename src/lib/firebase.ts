@@ -12,8 +12,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+/** Thrown when a Firebase service is used before env vars are provided. */
+export class FirebaseNotConfiguredError extends Error {
+  code = "app/not-configured";
+  constructor(service = "Firebase") {
+    super(`${service} is not configured`);
+    this.name = "FirebaseNotConfiguredError";
+  }
+}
+
 function isConfigured(): boolean {
-  return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
+  return Boolean(
+    firebaseConfig.apiKey &&
+      firebaseConfig.projectId &&
+      firebaseConfig.authDomain &&
+      firebaseConfig.appId,
+  );
 }
 
 let _app: FirebaseApp | null = null;
@@ -56,30 +70,17 @@ export function getStorageSafe(): FirebaseStorage | null {
   return _storage;
 }
 
-// Convenience getters that throw when Firebase is not configured (for client-side use)
-export const auth = new Proxy({} as Auth, {
-  get(_, prop) {
-    const a = getAuthSafe();
-    if (!a) throw new Error("Firebase is not configured");
-    return (a as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const db = new Proxy({} as Firestore, {
-  get(_, prop) {
-    const d = getDbSafe();
-    if (!d) throw new Error("Firebase is not configured");
-    return (d as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const storage = new Proxy({} as FirebaseStorage, {
-  get(_, prop) {
-    const s = getStorageSafe();
-    if (!s) throw new Error("Firebase is not configured");
-    return (s as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
+/**
+ * Returns the REAL Firebase Auth instance or throws a typed error.
+ *
+ * Never wrap the Auth instance in a Proxy: the SDK mutates its own fields
+ * (e.g. `currentUser`) using `this`, so a proxy silently splits state between
+ * the proxy and the real instance and listeners never see the signed-in user.
+ */
+export function requireAuth(): Auth {
+  const a = getAuthSafe();
+  if (!a) throw new FirebaseNotConfiguredError("Firebase Auth");
+  return a;
+}
 
 export { isConfigured };
-export default getAppSafe();

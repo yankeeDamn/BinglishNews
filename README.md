@@ -8,10 +8,12 @@ A modern, multi-source news aggregation platform built with **Next.js 16 (App Ro
 - 🇮🇳 **Dedicated India Feed** — India-focused RSS feeds (BBC India, Times of India, The Hindu) with GDELT region filtering
 - ✍️ **Community Posts** — Authenticated users submit news posts; admin moderation required for publishing
 - 🛡️ **Admin Moderation** — Posts start as `pending`; admin dashboard at `/admin` for approve/reject workflow
-- 🔐 **Firebase Auth** — Email/password authentication with friendly error messages and Firestore user profiles
+- 🔐 **Firebase Auth** — Email/password and Google sign-in, password reset, safe `?next=` redirects, self-healing user profiles and actionable error messages
 - 🖼️ **Image Uploads** — Firebase Storage with 5 MB limit and image-only validation
 - 🔍 **Search + Filters** — Category tabs (All / World / India / Tech), search bar, and pagination
 - 🎨 **Black + Gold Theme** — Dark background, gold accents, shimmer skeletons, responsive mobile-first design
+- 🔎 **SEO & Sharing** — Server-rendered post pages with Open Graph / Twitter / JSON-LD metadata, `sitemap.xml` and `robots.txt`
+- ♿ **Accessible** — Skip link, labelled forms, ARIA states, keyboard-friendly navigation
 - 🚀 **Vercel Ready** — Serverless-compatible with `Cache-Control` headers (no in-memory cache)
 
 ## Tech Stack
@@ -39,10 +41,11 @@ npm install
 ### 2. Configure Firebase
 
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Enable **Authentication** → Email/Password
+2. Enable **Authentication** → Sign-in method → **Email/Password** (and **Google**, if you want Google sign-in)
 3. Create a **Firestore** database
 4. Enable **Storage**
-5. Copy `.env.example` to `.env.local` and fill in your Firebase config:
+5. Authentication → Settings → **Authorized domains**: add your production domain (e.g. `your-app.vercel.app`) — required for Google sign-in
+6. Copy `.env.example` to `.env.local` and fill in your Firebase config:
 
 ```bash
 cp .env.example .env.local
@@ -50,9 +53,17 @@ cp .env.example .env.local
 
 > The site loads without Firebase env vars, but auth, posts, and moderation features require them.
 
-### 3. Deploy Security Rules
+### 3. Deploy Security Rules & Indexes
 
 Copy the contents of `firestore.rules` and `storage.rules` into your Firebase Console.
+
+The home page and author queries need composite indexes (`firestore.indexes.json`). Deploy them with the Firebase CLI:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+Without them, published posts silently fail to load and the home page shows "No published posts yet".
 
 ### 4. Run Locally
 
@@ -70,6 +81,17 @@ npx vercel
 
 Add the same environment variables from `.env.local` to your Vercel project settings.
 
+## Troubleshooting Sign-in
+
+| Symptom | Likely cause |
+|---|---|
+| "…site is not fully configured" / "Firebase configuration is missing" | The `NEXT_PUBLIC_FIREBASE_*` variables are not set for the **deployed** environment. Add them in Vercel → Settings → Environment Variables and **redeploy** (they are inlined at build time). |
+| "This sign-in method is not enabled yet" | Enable Email/Password (or Google) under Firebase Authentication → Sign-in method. |
+| "This domain is not authorized" | Add your domain under Authentication → Settings → Authorized domains. |
+| Signed in but no posts / role is not admin | Deploy `firestore.rules` and `firestore.indexes.json`; set `role: "admin"` on your `users/{uid}` document. |
+
+> **Developer note:** never wrap the Firebase `Auth` instance in a `Proxy`. The SDK assigns fields like `currentUser` using `this`, so a proxy splits state between itself and the real instance and `onAuthStateChanged` never reports the new user. Use `requireAuth()` from `src/lib/firebase.ts`.
+
 ## Project Structure
 
 ```
@@ -81,11 +103,14 @@ src/
 │   │   └── posts/[id]/moderate/        # Moderation API
 │   ├── admin/page.tsx                   # Admin moderation dashboard
 │   ├── auth/
-│   │   ├── signin/page.tsx              # Sign-in with friendly error messages
-│   │   └── signup/page.tsx              # Sign-up with validation
+│   │   ├── signin/page.tsx              # Sign-in (email + Google, ?next= redirect)
+│   │   ├── signup/page.tsx              # Sign-up with password policy
+│   │   └── forgot-password/page.tsx     # Password reset email
 │   ├── posts/
 │   │   ├── new/page.tsx                 # Create post (pending moderation)
-│   │   └── [id]/page.tsx                # Post detail page
+│   │   └── [id]/page.tsx                # Server-rendered post page (SEO metadata)
+│   ├── error.tsx / not-found.tsx        # Error boundary and 404 page
+│   ├── sitemap.ts / robots.ts           # SEO
 │   ├── globals.css                      # Black + Gold theme variables
 │   ├── layout.tsx                       # Root layout with SEO metadata
 │   └── page.tsx                         # Home: hero, community posts, world & India news
@@ -93,11 +118,14 @@ src/
 │   ├── Navbar.tsx                       # Responsive nav with mobile toggle
 │   ├── NewsFeed.tsx                     # Category tabs, search, pagination, skeletons
 │   ├── PostCard.tsx                     # Post preview card
+│   ├── RequireAuth.tsx                  # Route guard (signed-in / admin)
+│   ├── auth/AuthUI.tsx                  # Shared auth form components
 │   └── WorldNewsFeed.tsx                # Legacy GDELT-only feed
 ├── context/
-│   └── AuthContext.tsx                  # Firebase Auth context with error state
+│   └── AuthContext.tsx                  # Auth state + signIn/signUp/Google/reset/signOut actions
 ├── lib/
 │   ├── firebase.ts                      # Firebase client init (safe lazy loading)
+│   ├── auth-errors.ts                   # Friendly error mapping, password policy, safe redirects
 │   ├── firestore.ts                     # Firestore CRUD operations
 │   ├── storage.ts                       # Firebase Storage uploads
 │   └── news/
@@ -111,6 +139,7 @@ src/
 └── types/
     └── index.ts                         # Article, NewsResponse, Post, UserProfile
 firestore.rules                          # Firestore security rules
+firestore.indexes.json                   # Composite indexes for post queries
 storage.rules                            # Storage security rules
 ```
 

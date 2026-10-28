@@ -5,9 +5,18 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { createPost } from "@/lib/firestore";
 import { uploadPostImage } from "@/lib/storage";
+import RequireAuth from "@/components/RequireAuth";
 
 export default function NewPostPage() {
-  const { user, profile, loading: authLoading } = useAuth();
+  return (
+    <RequireAuth>
+      <NewPostForm />
+    </RequireAuth>
+  );
+}
+
+function NewPostForm() {
+  const { user, profile } = useAuth();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -17,26 +26,7 @@ export default function NewPostPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-[#888]">Loading…</p>
-      </div>
-    );
-  }
-
-  if (!user || !profile) {
-    return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2">
-        <p className="text-[#aaa]">
-          You must be signed in to create a post.
-        </p>
-        <a href="/auth/signin" className="text-gold hover:underline">
-          Sign In
-        </a>
-      </div>
-    );
-  }
+  if (!user) return null; // RequireAuth guarantees a user; narrows the type.
 
   const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -78,7 +68,7 @@ export default function NewPostPage() {
         content: content.trim(),
         imageUrl,
         authorId: user.uid,
-        authorName: profile.displayName,
+        authorName: profile?.displayName || user.displayName || "Anonymous",
       });
 
       router.push("/");

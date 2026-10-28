@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   );
   const region = searchParams.get("region")?.toUpperCase() ?? undefined;
   const category = searchParams.get("category")?.toLowerCase() ?? undefined;
-  const query = searchParams.get("q") ?? undefined;
+  const query = searchParams.get("q")?.trim().slice(0, 100) || undefined;
 
   try {
     const result = await fetchAggregatedNews({

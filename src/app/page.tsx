@@ -3,7 +3,8 @@ import PostCard from "@/components/PostCard";
 import NewsFeed from "@/components/NewsFeed";
 import { getPublishedPosts } from "@/lib/firestore";
 
-export const dynamic = "force-dynamic";
+// Re-render at most once a minute instead of hitting Firestore on every request.
+export const revalidate = 60;
 
 export default async function HomePage() {
   let posts: Awaited<ReturnType<typeof getPublishedPosts>> = [];
