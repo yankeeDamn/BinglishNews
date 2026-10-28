@@ -29,13 +29,9 @@ async function withTimeout<T>(work: Promise<T>, ms: number, fallback: T): Promis
 
 async function loadFrontPage() {
   const [articles, posts] = await Promise.all([
-    withTimeout(
-      fetchAggregatedNews({ page: 1, pageSize: 14 })
-        .then((r) => r.articles)
-        .catch((): Article[] => []),
-      6000,
-      [] as Article[],
-    ),
+    fetchAggregatedNews({ page: 1, pageSize: 14 })
+      .then((r) => r.articles)
+      .catch((): Article[] => []),
     withTimeout(
       getPublishedPosts().catch((): Post[] => []),
       6000,

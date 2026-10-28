@@ -1,7 +1,6 @@
 import type { Article } from "@/types";
 import type { NewsProvider, FetchOptions } from "./provider";
 
-const GDELT_TIMEOUT_MS = 8_000;
 const ROLLING_WINDOW_MS = 48 * 60 * 60 * 1000; // 48 hours
 
 /**
@@ -68,11 +67,8 @@ export class GdeltProvider implements NewsProvider {
     url.searchParams.set("startdatetime", fmt(start));
     url.searchParams.set("enddatetime", fmt(now));
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), GDELT_TIMEOUT_MS);
-
-    try {
-      const res = await fetch(url.toString(), { signal: controller.signal });
+    {
+      const res = await fetch(url.toString(), { signal: options.signal });
       if (!res.ok) return [];
       const data = await res.json();
       const raw: GdeltRawArticle[] = data.articles ?? [];
@@ -94,8 +90,6 @@ export class GdeltProvider implements NewsProvider {
       // Simulate pagination by slicing
       const startIdx = (page - 1) * pageSize;
       return mapped.slice(startIdx, startIdx + pageSize);
-    } finally {
-      clearTimeout(timeout);
     }
   }
 }

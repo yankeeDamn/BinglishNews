@@ -41,29 +41,6 @@ function deduplicateArticles(articles: Article[]): Article[] {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Retry helper                                                       */
-/* ------------------------------------------------------------------ */
-
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  retries = 1,
-  delayMs = 500,
-): Promise<T> {
-  let lastError: unknown;
-  for (let i = 0; i <= retries; i++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastError = err;
-      if (i < retries) {
-        await new Promise((r) => setTimeout(r, delayMs));
-      }
-    }
-  }
-  throw lastError;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Provider registry                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -89,12 +66,22 @@ export async function fetchAggregatedNews(
     activeProviders = providers.filter((p) => p.name !== "hackernews");
   }
 
-  // Fetch from all active providers with retry + fallback
+  // Bound each upstream independently so one slow provider cannot hide others.
   const allArticles: Article[] = [];
   const settledResults = await Promise.allSettled(
-    activeProviders.map((provider) =>
-      withRetry(() => provider.fetch({ ...options, page, pageSize }), 1, 400),
-    ),
+    activeProviders.map(async (provider) => {
+      const controller = new AbortController();
+      const abort = () => controller.abort();
+      options.signal?.addEventListener("abort", abort, { once: true });
+      if (options.signal?.aborted) controller.abort();
+      const timeout = setTimeout(abort, provider.name === "gdelt" ? 3500 : 4000);
+      try {
+        return await provider.fetch({ ...options, page, pageSize, signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+        options.signal?.removeEventListener("abort", abort);
+      }
+    }),
   );
 
   for (let i = 0; i < settledResults.length; i++) {
