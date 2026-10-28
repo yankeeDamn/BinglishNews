@@ -62,7 +62,7 @@ function Notice({
     <div className="flex min-h-[50vh] items-center justify-center px-4 text-center">
       <p
         role={danger ? "alert" : "status"}
-        className={danger ? "font-medium text-red-400" : muted ? "text-[#888]" : "text-[#aaa]"}
+        className={danger ? "font-medium text-danger" : muted ? "text-muted" : "text-muted"}
       >
         {children}
       </p>

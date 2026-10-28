@@ -58,7 +58,7 @@ function SignInForm() {
           New to BinglishNews?{" "}
           <Link
             href={next === "/" ? "/auth/signup" : `/auth/signup?next=${encodeURIComponent(next)}`}
-            className="text-gold hover:underline"
+            className="text-accent-text underline underline-offset-4 hover:no-underline"
           >
             Create an account
           </Link>
@@ -93,7 +93,7 @@ function SignInForm() {
           onChange={(e) => setPassword(e.target.value)}
           disabled={busy}
           labelAside={
-            <Link href="/auth/forgot-password" className="text-xs text-gold hover:underline">
+            <Link href="/auth/forgot-password" className="text-xs text-accent-text hover:underline">
               Forgot password?
             </Link>
           }

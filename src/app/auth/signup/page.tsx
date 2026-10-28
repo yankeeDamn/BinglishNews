@@ -68,7 +68,7 @@ function SignUpForm() {
           Already have an account?{" "}
           <Link
             href={next === "/" ? "/auth/signin" : `/auth/signin?next=${encodeURIComponent(next)}`}
-            className="text-gold hover:underline"
+            className="text-accent-text underline underline-offset-4 hover:no-underline"
           >
             Sign In
           </Link>

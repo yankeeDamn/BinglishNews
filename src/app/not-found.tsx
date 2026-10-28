@@ -1,17 +1,17 @@
 import Link from "next/link";
+import { SunMark } from "@/components/Logo";
 
 export default function NotFound() {
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-      <p className="text-5xl font-extrabold text-gold-gradient">404</p>
-      <h1 className="text-2xl font-bold text-white">Page not found</h1>
-      <p className="text-[#888]">
-        The story you&apos;re looking for doesn&apos;t exist, hasn&apos;t been
-        published yet, or has moved.
+      <SunMark className="h-14 w-14" />
+      <h1 className="font-serif text-4xl font-semibold tracking-tight">We can&apos;t find that page</h1>
+      <p className="text-muted">
+        The story may have been moved, or it hasn&apos;t been published yet.
       </p>
       <Link
         href="/"
-        className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-black transition hover:bg-gold-light"
+        className="mt-2 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-ink transition hover:bg-accent-hover active:scale-[0.97]"
       >
         Back to the front page
       </Link>

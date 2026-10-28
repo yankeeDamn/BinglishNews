@@ -3,7 +3,7 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 
 const inputClass =
-  "w-full rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2.5 text-white placeholder-[#666] outline-none transition focus:border-gold focus:ring-1 focus:ring-gold disabled:opacity-60";
+  "w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-ink placeholder-muted outline-none transition focus:border-accent focus:ring-1 focus:ring-accent disabled:opacity-60";
 
 export function AuthShell({
   title,
@@ -18,14 +18,14 @@ export function AuthShell({
 }) {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-12">
-      <div className="rounded-2xl border border-[#2a2a2a] bg-[#101010] p-6 shadow-xl shadow-black/30 sm:p-8">
-        <h1 className="text-center text-2xl font-bold text-white">{title}</h1>
+      <div className="rounded-2xl border border-line bg-surface p-6 shadow-xl shadow-ink/10 sm:p-8">
+        <h1 className="text-center text-2xl font-bold text-ink">{title}</h1>
         {subtitle && (
-          <p className="mt-2 text-center text-sm text-[#888]">{subtitle}</p>
+          <p className="mt-2 text-center text-sm text-muted">{subtitle}</p>
         )}
         <div className="mt-6">{children}</div>
       </div>
-      {footer && <p className="mt-5 text-center text-sm text-[#888]">{footer}</p>}
+      {footer && <p className="mt-5 text-center text-sm text-muted">{footer}</p>}
     </div>
   );
 }
@@ -39,8 +39,8 @@ export function FormAlert({
 }) {
   const styles =
     kind === "error"
-      ? "border-red-900/40 bg-red-900/10 text-red-300"
-      : "border-emerald-900/40 bg-emerald-900/10 text-emerald-300";
+      ? "border-danger/40 bg-danger/10 text-danger"
+      : "border-success/40 bg-success/10 text-success";
   return (
     <div
       role={kind === "error" ? "alert" : "status"}
@@ -61,11 +61,11 @@ export function TextField({ label, hint, id, ...props }: FieldProps) {
   const inputId = id ?? autoId;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-sm font-medium text-[#ccc]">
+      <label htmlFor={inputId} className="text-sm font-medium text-ink/80">
         {label}
       </label>
       <input id={inputId} className={inputClass} {...props} />
-      {hint && <p className="text-xs text-[#777]">{hint}</p>}
+      {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );
 }
@@ -83,7 +83,7 @@ export function PasswordField({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <label htmlFor={inputId} className="text-sm font-medium text-[#ccc]">
+        <label htmlFor={inputId} className="text-sm font-medium text-ink/80">
           {label}
         </label>
         {labelAside}
@@ -100,12 +100,12 @@ export function PasswordField({
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Hide password" : "Show password"}
           aria-pressed={visible}
-          className="absolute inset-y-0 right-0 px-3 text-xs font-medium text-[#888] transition hover:text-gold"
+          className="absolute inset-y-0 right-0 px-3 text-xs font-medium text-muted transition hover:text-accent-text"
         >
           {visible ? "Hide" : "Show"}
         </button>
       </div>
-      {hint && <p className="text-xs text-[#777]">{hint}</p>}
+      {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );
 }
@@ -123,7 +123,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={loading}
-      className="rounded-lg bg-gold py-2.5 font-semibold text-black transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-lg bg-accent py-2.5 font-semibold text-accent-ink transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
     >
       {loading ? loadingText : children}
     </button>
@@ -132,10 +132,10 @@ export function SubmitButton({
 
 export function Divider({ children = "or" }: { children?: ReactNode }) {
   return (
-    <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-[#666]">
-      <span className="h-px flex-1 bg-[#2a2a2a]" />
+    <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
+      <span className="h-px flex-1 bg-line" />
       {children}
-      <span className="h-px flex-1 bg-[#2a2a2a]" />
+      <span className="h-px flex-1 bg-line" />
     </div>
   );
 }
@@ -154,7 +154,7 @@ export function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-[#2a2a2a] bg-[#141414] py-2.5 text-sm font-medium text-white transition hover:border-gold/60 hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-60"
+      className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-line bg-surface py-2.5 text-sm font-medium text-ink transition hover:border-accent/60 hover:bg-sunken disabled:cursor-not-allowed disabled:opacity-60"
     >
       <svg className="h-4 w-4" viewBox="0 0 48 48" aria-hidden="true">
         <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" />

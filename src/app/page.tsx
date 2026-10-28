@@ -1,118 +1,214 @@
 import Link from "next/link";
-import PostCard from "@/components/PostCard";
+import ArticleImage from "@/components/ArticleImage";
+import Dateline from "@/components/Dateline";
 import NewsFeed from "@/components/NewsFeed";
+import PostCard from "@/components/PostCard";
+import Ticker from "@/components/Ticker";
 import { getPublishedPosts } from "@/lib/firestore";
+import { sourceLabel, timeAgo } from "@/lib/format";
+import { fetchAggregatedNews } from "@/lib/news";
+import type { Article, Post } from "@/types";
 
-// Re-render at most once a minute instead of hitting Firestore on every request.
+// Re-render at most once a minute instead of on every request.
 export const revalidate = 60;
 
-export default async function HomePage() {
-  let posts: Awaited<ReturnType<typeof getPublishedPosts>> = [];
+/** Resolve to `fallback` instead of letting one slow upstream stall the page. */
+async function withTimeout<T>(work: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    posts = await getPublishedPosts();
-  } catch {
-    // Firestore may not be configured yet — render empty
+    return await Promise.race([
+      work,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), ms);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+async function loadFrontPage() {
+  const [articles, posts] = await Promise.all([
+    withTimeout(
+      fetchAggregatedNews({ page: 1, pageSize: 14 })
+        .then((r) => r.articles)
+        .catch((): Article[] => []),
+      6000,
+      [] as Article[],
+    ),
+    withTimeout(
+      getPublishedPosts().catch((): Post[] => []),
+      6000,
+      [] as Post[],
+    ),
+  ]);
+  return { articles, posts };
+}
+
+function Meta({ article }: { article: Article }) {
+  const when = timeAgo(article.publishedAt);
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted">
+      <span className="font-semibold text-ink/80">{sourceLabel(article.source)}</span>
+      {when && (
+        <>
+          <span aria-hidden="true">/</span>
+          <time dateTime={article.publishedAt}>{when}</time>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default async function HomePage() {
+  const { articles, posts } = await loadFrontPage();
+
+  // Lead with the newest story that has a picture; everything else is "Latest".
+  const lead = articles.find((a) => a.imageUrl) ?? articles[0];
+  const latest = articles.filter((a) => a !== lead).slice(0, 5);
 
   return (
-    <div className="min-h-screen">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#1a1a1a] px-4 py-24 text-white">
-        {/* Decorative elements */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-gold/5 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-gold/10 blur-3xl" />
-        <div className="pointer-events-none absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/5 blur-3xl" />
+    <div>
+      <h1 className="sr-only">BinglishNews: today&apos;s top stories</h1>
 
-        <div className="relative mx-auto max-w-4xl text-center">
-          <span className="mb-4 inline-block rounded-full border border-gold/30 bg-gold/10 px-4 py-1 text-sm font-medium text-gold">
-            📰 Multi-source news &amp; community stories
-          </span>
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
-            Binglish<span className="text-gold-gradient">News</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-[#aaa]">
-            Stay informed with headlines from GDELT, RSS feeds, and Hacker News
-            — plus original stories written by our community.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#news"
-              className="rounded-full bg-gold px-7 py-3 text-sm font-semibold text-black shadow-lg transition hover:bg-gold-light hover:shadow-xl"
-            >
-              Browse News ↓
-            </a>
-            <Link
-              href="/posts/new"
-              className="rounded-full border border-gold/40 bg-gold/10 px-7 py-3 text-sm font-semibold text-gold backdrop-blur-sm transition hover:bg-gold/20"
-            >
-              Write a Story
-            </Link>
-          </div>
-        </div>
-      </section>
+      <Ticker articles={articles} />
 
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        {/* Community Posts */}
-        <section className="mb-16">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white">
-              ✍️ Community Posts
+      <div className="mx-auto max-w-6xl px-4 pb-24 pt-6">
+        <p className="mb-6 h-5 text-sm text-muted">
+          <Dateline />
+        </p>
+
+        {/* Front page */}
+        {lead ? (
+          <section aria-label="Top stories" className="grid gap-10 lg:grid-cols-12 lg:gap-0">
+            <article className="lg:col-span-8 lg:pr-10">
+              <a
+                href={lead.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block"
+              >
+                {lead.imageUrl && (
+                  <div className="wipe-in overflow-hidden rounded-md">
+                    <ArticleImage
+                      priority
+                      src={lead.imageUrl}
+                      label={sourceLabel(lead.source)}
+                      fallbackClassName="text-4xl"
+                      className="aspect-[16/9] w-full transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                    />
+                  </div>
+                )}
+                <div className="rise mt-6" style={{ "--d": 4 } as React.CSSProperties}>
+                  <Meta article={lead} />
+                </div>
+                <h2
+                  className="rise mt-3 font-serif text-4xl font-semibold leading-[1.04] tracking-tight sm:text-5xl lg:text-[56px]"
+                  style={{ "--d": 5 } as React.CSSProperties}
+                >
+                  <span className="hl">{lead.title}</span>
+                </h2>
+                {lead.summary && (
+                  <p
+                    className="rise mt-4 max-w-2xl text-lg leading-relaxed text-muted"
+                    style={{ "--d": 6 } as React.CSSProperties}
+                  >
+                    {lead.summary}
+                  </p>
+                )}
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            </article>
+
+            <aside
+              aria-labelledby="latest-title"
+              className="border-line lg:col-span-4 lg:border-l lg:pl-8"
+            >
+              <h2
+                id="latest-title"
+                className="rise flex items-center gap-2 text-sm font-semibold"
+                style={{ "--d": 3 } as React.CSSProperties}
+              >
+                <span className="live-dot h-2 w-2 rounded-full bg-breaking" aria-hidden="true" />
+                Latest
+              </h2>
+              <ol className="mt-3 divide-y divide-line">
+                {latest.map((article, i) => (
+                  <li
+                    key={article.url}
+                    className="rise py-4"
+                    style={{ "--d": i + 4 } as React.CSSProperties}
+                  >
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block"
+                    >
+                      <Meta article={article} />
+                      <h3 className="mt-1.5 font-serif text-xl font-semibold leading-snug tracking-tight">
+                        <span className="hl">{article.title}</span>
+                      </h3>
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </aside>
+          </section>
+        ) : (
+          <section className="rounded-xl bg-surface p-10 text-center">
+            <p className="font-serif text-2xl font-semibold">Headlines are taking a moment.</p>
+            <p className="mx-auto mt-2 max-w-md text-muted">
+              We couldn&apos;t reach our news sources just now. Refresh in a minute, or
+              read the community stories below.
+            </p>
+          </section>
+        )}
+
+        {/* Community */}
+        <section id="community" className="mt-24 scroll-mt-20" aria-labelledby="community-title">
+          <div className="mb-8 flex items-end justify-between gap-4 border-b border-line pb-4">
+            <h2 id="community-title" className="font-serif text-3xl font-semibold tracking-tight">
+              From our community
             </h2>
             <Link
               href="/posts/new"
-              className="rounded-full bg-gold px-4 py-2 text-sm font-medium text-black transition hover:bg-gold-light"
+              className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-ink transition hover:bg-accent-hover active:scale-[0.97]"
             >
-              + Write Post
+              Write a story
             </Link>
           </div>
 
           {posts.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {posts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-[#2a2a2a] bg-[#141414] p-10 text-center">
-              <p className="text-[#888]">
-                No published posts yet. Be the first to{" "}
-                <Link
-                  href="/posts/new"
-                  className="font-semibold text-gold hover:underline"
-                >
-                  write one
-                </Link>
-                !
+            <div className="rounded-xl bg-surface p-10 text-center">
+              <p className="font-serif text-2xl font-semibold">No community stories yet.</p>
+              <p className="mt-1 text-muted">
+                Reporting something local? Write it up and our editors will review it.
               </p>
+              <Link
+                href="/posts/new"
+                className="mt-5 inline-block rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-ink transition hover:bg-accent-hover active:scale-[0.97]"
+              >
+                Write the first one
+              </Link>
             </div>
           )}
         </section>
 
-        {/* World News Feed */}
-        <section id="news">
-          <div className="mb-6 flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-white">
-              🌍 World News
-            </h2>
-            <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-0.5 text-xs font-medium text-gold">
-              GDELT · RSS · HackerNews
-            </span>
-          </div>
-          <NewsFeed id="news-feed" />
-        </section>
-
-        {/* India News Feed */}
-        <section id="india-news" className="mt-16">
-          <div className="mb-6 flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-white">
-              🇮🇳 India News
-            </h2>
-            <span className="rounded-full border border-gold/30 bg-gold/10 px-3 py-0.5 text-xs font-medium text-gold">
-              BBC India · TOI · The Hindu
-            </span>
-          </div>
-          <NewsFeed id="india-news-feed" initialCategory="india" />
-        </section>
+        {/* Feeds */}
+        <div className="mt-24">
+          <NewsFeed id="news" title="News" />
+        </div>
+        <div className="mt-24">
+          <NewsFeed id="india-news" title="India" initialCategory="india" showTabs={false} />
+        </div>
       </div>
     </div>
   );

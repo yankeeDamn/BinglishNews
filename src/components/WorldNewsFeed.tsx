@@ -51,15 +51,15 @@ export default function WorldNewsFeed() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-900/30 bg-red-900/10 p-6 text-center">
-        <p className="text-red-400">{error}</p>
+      <div className="rounded-2xl border border-danger/40 bg-danger/10 p-6 text-center">
+        <p className="text-danger">{error}</p>
       </div>
     );
   }
 
   if (articles.length === 0) {
     return (
-      <p className="text-center text-[#888]">
+      <p className="text-center text-muted">
         No world news available right now. Check back soon.
       </p>
     );
@@ -73,7 +73,7 @@ export default function WorldNewsFeed() {
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#141414]"
+          className="card-hover group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface"
         >
           {article.socialimage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -83,19 +83,19 @@ export default function WorldNewsFeed() {
               className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]">
+            <div className="flex h-44 w-full items-center justify-center bg-gradient-to-br from-sunken to-line">
               <span className="text-4xl opacity-30">🌐</span>
             </div>
           )}
 
           <div className="flex flex-1 flex-col p-4">
-            <h4 className="mb-3 line-clamp-3 text-sm font-semibold leading-snug text-white group-hover:text-gold transition">
+            <h4 className="mb-3 line-clamp-3 text-sm font-semibold leading-snug text-ink group-hover:text-accent-text transition">
               {article.title}
             </h4>
 
-            <div className="mt-auto flex items-center justify-between gap-2 text-xs text-[#666]">
+            <div className="mt-auto flex items-center justify-between gap-2 text-xs text-muted">
               <div className="flex items-center gap-1.5 overflow-hidden">
-                <span className="truncate font-medium text-[#aaa]">
+                <span className="truncate font-medium text-muted">
                   {article.domain}
                 </span>
                 {article.sourcecountry && (
