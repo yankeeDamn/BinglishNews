@@ -1,6 +1,6 @@
 # BinglishNews
 
-A modern, multi-source news aggregation platform built with **Next.js 16 (App Router)**, **Firebase**, and a **Black + Gold** dark theme. Aggregates headlines from GDELT, RSS feeds, and Hacker News — plus original community stories with admin moderation.
+A modern, multi-source news aggregation platform built with **Next.js 16 (App Router)**, **Firebase**, and an editorial light/dark design. Aggregates headlines from GDELT, RSS feeds, and Hacker News — plus original community stories with admin moderation.
 
 ## Features
 
@@ -11,7 +11,8 @@ A modern, multi-source news aggregation platform built with **Next.js 16 (App Ro
 - 🔐 **Firebase Auth** — Email/password and Google sign-in, password reset, safe `?next=` redirects, self-healing user profiles and actionable error messages
 - 🖼️ **Image Uploads** — Firebase Storage with 5 MB limit and image-only validation
 - 🔍 **Search + Filters** — Category tabs (All / World / India / Tech), search bar, and pagination
-- 🎨 **Black + Gold Theme** — Dark background, gold accents, shimmer skeletons, responsive mobile-first design
+- 🎨 **Editorial Design** — Serif headlines (Newsreader) with a clean sans UI (Hanken Grotesk), light and dark themes (follows the system, with a manual toggle), marigold accent, mobile-first layout
+- ✨ **Motion with restraint** — Staged lead-story entrance, live headline ticker (pauses on hover), animated topic tabs, article reading-progress bar; all disabled for readers who prefer reduced motion
 - 🔎 **SEO & Sharing** — Server-rendered post pages with Open Graph / Twitter / JSON-LD metadata, `sitemap.xml` and `robots.txt`
 - ♿ **Accessible** — Skip link, labelled forms, ARIA states, keyboard-friendly navigation
 - 🚀 **Vercel Ready** — Serverless-compatible with `Cache-Control` headers (no in-memory cache)
@@ -21,7 +22,7 @@ A modern, multi-source news aggregation platform built with **Next.js 16 (App Ro
 | Layer       | Technology                                          |
 |-------------|-----------------------------------------------------|
 | Framework   | Next.js 16 (App Router, Turbopack)                  |
-| Styling     | Tailwind CSS 4, Black + Gold theme                  |
+| Styling     | Tailwind CSS 4, CSS-variable design tokens (light/dark), self-hosted variable fonts |
 | Auth        | Firebase Auth (email/password)                      |
 | Database    | Cloud Firestore                                     |
 | Storage     | Firebase Storage                                    |
@@ -111,11 +112,15 @@ src/
 │   │   └── [id]/page.tsx                # Server-rendered post page (SEO metadata)
 │   ├── error.tsx / not-found.tsx        # Error boundary and 404 page
 │   ├── sitemap.ts / robots.ts           # SEO
-│   ├── globals.css                      # Black + Gold theme variables
+│   ├── globals.css                      # Design tokens (light/dark), fonts, motion
 │   ├── layout.tsx                       # Root layout with SEO metadata
 │   └── page.tsx                         # Home: hero, community posts, world & India news
 ├── components/
-│   ├── Navbar.tsx                       # Responsive nav with mobile toggle
+│   ├── Navbar.tsx                       # Responsive nav with mobile menu
+│   ├── Ticker.tsx / Dateline.tsx        # Live headline strip, reader-local date
+│   ├── ThemeToggle.tsx / Logo.tsx       # Theme switch, wordmark
+│   ├── ArticleImage.tsx                 # Remote image with typographic fallback
+│   ├── ReadingProgress.tsx / ShareButton.tsx  # Article page extras
 │   ├── NewsFeed.tsx                     # Category tabs, search, pagination, skeletons
 │   ├── PostCard.tsx                     # Post preview card
 │   ├── RequireAuth.tsx                  # Route guard (signed-in / admin)

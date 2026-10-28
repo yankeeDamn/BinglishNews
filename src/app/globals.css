@@ -1,90 +1,237 @@
 @import "tailwindcss";
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "@fontsource-variable/hanken-grotesk/wght.css";
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens                                                      */
+/*  Light is the default. Dark follows the system unless the reader    */
+/*  picked a theme (data-theme on <html>, set before first paint).     */
+/* ------------------------------------------------------------------ */
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #f5f5f5;
-  --card-bg: #141414;
-  --card-border: #2a2a2a;
-  --accent: #d4a017;
-  --accent-hover: #b8860b;
-  --accent-light: #f0d060;
-  --gold: #d4a017;
-  --gold-light: #f0d060;
-  --gold-dark: #b8860b;
-  --muted: #888888;
-  --surface: #1a1a1a;
-  --surface-hover: #222222;
+  color-scheme: light;
+  --paper: #ffffff;
+  --surface: #f7f8fa;
+  --sunken: #eef0f3;
+  --line: #e1e4ea;
+  --ink: #12141a;
+  --muted: #5b6070;
+  --accent: #f2a900;
+  --accent-hover: #d99800;
+  --accent-ink: #12141a;
+  --accent-text: #8a5a00;
+  --breaking: #d92d20;
+  --danger: #b42318;
+  --success: #067647;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0e0f13;
+  --surface: #16181e;
+  --sunken: #1d2027;
+  --line: #2b2f39;
+  --ink: #f3f4f6;
+  --muted: #a0a6b4;
+  --accent: #f2b83b;
+  --accent-hover: #ffc95c;
+  --accent-ink: #12141a;
+  --accent-text: #f2b83b;
+  --breaking: #ff5a4e;
+  --danger: #ff8a80;
+  --success: #4ade80;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #0e0f13;
+    --surface: #16181e;
+    --sunken: #1d2027;
+    --line: #2b2f39;
+    --ink: #f3f4f6;
+    --muted: #a0a6b4;
+    --accent: #f2b83b;
+    --accent-hover: #ffc95c;
+    --accent-ink: #12141a;
+    --accent-text: #f2b83b;
+    --breaking: #ff5a4e;
+    --danger: #ff8a80;
+    --success: #4ade80;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-gold: var(--gold);
-  --color-gold-light: var(--gold-light);
-  --color-gold-dark: var(--gold-dark);
+  --color-paper: var(--paper);
   --color-surface: var(--surface);
-  --color-surface-hover: var(--surface-hover);
-  --color-card-bg: var(--card-bg);
-  --color-card-border: var(--card-border);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
   --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-text: var(--accent-text);
+  --color-breaking: var(--breaking);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+
+  --font-serif: "Newsreader Variable", "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
 
 html {
   scroll-behavior: smooth;
-  color-scheme: dark;
+  background: var(--paper);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Card lift on hover */
-.card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-.card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(212, 160, 23, 0.1);
-  border-color: var(--gold);
+h1, h2, h3, h4 {
+  text-wrap: balance;
 }
 
-/* Gold gradient text utility */
-.text-gold-gradient {
-  background: linear-gradient(135deg, #f0d060, #d4a017, #b8860b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+p {
+  text-wrap: pretty;
 }
 
-/* Shimmer skeleton animation */
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Headline underline that draws in on hover/focus. Works across      */
+/*  wrapped lines, so it suits multi-line serif headlines.             */
+/* ------------------------------------------------------------------ */
+
+.hl {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1.5px;
+  transition: background-size 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+a:hover .hl,
+a:focus-visible .hl,
+.group:hover .hl,
+.group:focus-within .hl {
+  background-size: 100% 1.5px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Motion                                                             */
+/*  Used sparingly: one staged load sequence on the lead story, a      */
+/*  ticker, and a short fade when feed results change.                 */
+/* ------------------------------------------------------------------ */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes wipe {
+  from { clip-path: inset(0 0 100% 0); transform: scale(1.04); }
+  to   { clip-path: inset(0 0 0 0);    transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--breaking) 60%, transparent); }
+  80%, 100% { box-shadow: 0 0 0 7px transparent; }
+}
+
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
+  0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+.rise {
+  animation: rise 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--d, 0) * 90ms);
+}
+
+.wipe-in {
+  animation: wipe 1s cubic-bezier(0.65, 0, 0.15, 1) both;
+}
+
+.swap-in {
+  animation: fade-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee var(--marquee-duration, 70s) linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+.live-dot {
+  animation: live-pulse 1.8s ease-out infinite;
+}
+
 .skeleton {
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background: linear-gradient(90deg, var(--sunken) 25%, var(--line) 50%, var(--sunken) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.6s infinite;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marquee { overflow-x: auto; }
+  .marquee-track { animation: none; }
 }
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
+
+/* ------------------------------------------------------------------ */
+/*  Scrollbars                                                         */
+/* ------------------------------------------------------------------ */
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--paper); }
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+  background: var(--line);
+  border-radius: 6px;
+  border: 2px solid var(--paper);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #d4a017;
-}
-
-
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }

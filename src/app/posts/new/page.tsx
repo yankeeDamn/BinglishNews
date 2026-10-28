@@ -81,23 +81,23 @@ function NewPostForm() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold text-white">
+      <h1 className="mb-6 text-2xl font-bold text-ink">
         Create a News Post
       </h1>
 
-      <p className="mb-6 rounded-lg border border-gold/30 bg-gold/10 p-3 text-sm text-gold">
+      <p className="mb-6 rounded-lg border border-accent/30 bg-accent/10 p-3 text-sm text-accent-text">
         Your post will be submitted for moderation and will appear publicly once
         approved by an admin.
       </p>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-900/30 bg-red-900/10 p-3 text-sm text-red-400">
+        <div className="mb-4 rounded-lg border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#ccc]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">
           Title
           <input
             type="text"
@@ -105,11 +105,11 @@ function NewPostForm() {
             maxLength={200}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2 text-white outline-none transition focus:border-gold focus:ring-1 focus:ring-gold"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#ccc]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">
           Summary
           <input
             type="text"
@@ -118,35 +118,35 @@ function NewPostForm() {
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             placeholder="Brief summary (shown in card previews)"
-            className="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2 text-white placeholder-[#666] outline-none transition focus:border-gold focus:ring-1 focus:ring-gold"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-ink placeholder-muted outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#ccc]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">
           Content
           <textarea
             required
             rows={10}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2 text-white outline-none transition focus:border-gold focus:ring-1 focus:ring-gold"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#ccc]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">
           Cover Image (optional, max 5 MB)
           <input
             type="file"
             accept="image/*"
             onChange={handleImage}
-            className="rounded-lg border border-[#2a2a2a] bg-[#141414] px-3 py-2 text-sm text-[#888] file:mr-3 file:rounded file:border-0 file:bg-gold/20 file:px-3 file:py-1 file:text-gold file:cursor-pointer"
+            className="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-muted file:mr-3 file:rounded file:border-0 file:bg-accent/20 file:px-3 file:py-1 file:text-accent-text file:cursor-pointer"
           />
         </label>
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-gold py-2.5 font-semibold text-black transition hover:bg-gold-light disabled:opacity-50"
+          className="rounded-lg bg-accent py-2.5 font-semibold text-accent-ink transition hover:bg-accent-hover disabled:opacity-50"
         >
           {submitting ? "Submitting…" : "Submit for Review"}
         </button>
