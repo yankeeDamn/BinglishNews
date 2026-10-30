@@ -11,6 +11,9 @@ export interface Post {
   status: PostStatus;
   createdAt: string;
   updatedAt: string;
+  sourceUrl?: string;
+  imageCredit?: string;
+  publishedAt?: string;
   moderatedBy?: string;
   moderatedAt?: string;
 }

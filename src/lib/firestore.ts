@@ -78,6 +78,9 @@ function toPost(id: string, data: Record<string, unknown>): Post {
     status: data.status as PostStatus,
     createdAt: ts(data.createdAt),
     updatedAt: ts(data.updatedAt),
+    sourceUrl: (data.sourceUrl as string) ?? "",
+    imageCredit: (data.imageCredit as string) ?? "",
+    publishedAt: ts(data.publishedAt),
     moderatedBy: data.moderatedBy as string | undefined,
     moderatedAt: ts(data.moderatedAt),
   };
@@ -133,6 +136,7 @@ export async function moderatePost(
   const db = requireDb();
   await updateDoc(doc(db, "posts", postId), {
     status,
+    ...(status === "published" ? { publishedAt: serverTimestamp() } : {}),
     moderatedBy: moderatorId,
     moderatedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -152,7 +156,7 @@ export async function getUserPosts(uid: string): Promise<Post[]> {
 
 export async function updatePendingPost(
   id: string,
-  changes: Pick<Post, "title" | "summary" | "content" | "imageUrl">,
+  changes: Pick<Post, "title" | "summary" | "content" | "imageUrl" | "sourceUrl" | "imageCredit">,
 ): Promise<void> {
   await updateDoc(doc(requireDb(), "posts", id), {
     ...changes,

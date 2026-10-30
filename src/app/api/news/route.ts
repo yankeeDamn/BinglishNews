@@ -9,7 +9,7 @@ const MAX_PAGE_SIZE = 100;
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const page = Math.min(60, Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1));
   const pageSize = Math.min(
     MAX_PAGE_SIZE,
     Math.max(1, parseInt(searchParams.get("pageSize") ?? String(DEFAULT_PAGE_SIZE), 10) || DEFAULT_PAGE_SIZE),

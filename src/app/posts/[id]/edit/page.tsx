@@ -37,7 +37,7 @@ function EditPost() {
     setSaving(true); setError("");
     try {
       const imageUrl = file ? await uploadPostImage(file, user.uid) : removeImage ? null : post.imageUrl;
-      await updatePendingPost(post.id, { title: post.title.trim(), summary: post.summary.trim(), content: post.content.trim(), imageUrl });
+      await updatePendingPost(post.id, { title: post.title.trim(), summary: post.summary.trim(), content: post.content.trim(), imageUrl, sourceUrl: (post.sourceUrl || "").trim(), imageCredit: (post.imageCredit || "").trim() });
       router.push("/posts/mine");
     } catch { setError("Could not save this story. It may have already been moderated."); }
     finally { setSaving(false); }
@@ -50,6 +50,8 @@ function EditPost() {
       <label className="flex flex-col gap-1">Title<input className={inputClass} required maxLength={200} value={post.title} onChange={(e) => setPost({ ...post, title: e.target.value })} /></label>
       <label className="flex flex-col gap-1">Summary<input className={inputClass} required maxLength={500} value={post.summary} onChange={(e) => setPost({ ...post, summary: e.target.value })} /></label>
       <label className="flex flex-col gap-1">Story<textarea className={inputClass} required rows={12} value={post.content} onChange={(e) => setPost({ ...post, content: e.target.value })} /></label>
+      <label className="flex flex-col gap-1">Source link (optional)<input type="url" maxLength={2048} className={inputClass} value={post.sourceUrl || ""} onChange={(e) => setPost({ ...post, sourceUrl: e.target.value })} /></label>
+      <label className="flex flex-col gap-1">Image credit (optional)<input maxLength={200} className={inputClass} value={post.imageCredit || ""} onChange={(e) => setPost({ ...post, imageCredit: e.target.value })} /></label>
       {post.imageUrl && <label><input type="checkbox" checked={removeImage} onChange={(e) => setRemoveImage(e.target.checked)} /> Remove current image</label>}
       <label className="flex flex-col gap-1">Replace cover image (optional, max 5 MB)<input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></label>
       <button disabled={saving} className="rounded-lg bg-accent px-4 py-3 font-semibold text-accent-ink disabled:opacity-50">{saving ? "Saving…" : "Save changes"}</button>

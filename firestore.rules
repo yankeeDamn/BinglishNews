@@ -50,7 +50,7 @@ service cloud.firestore {
                     && resource.data.authorId == request.auth.uid
                     && resource.data.status == "pending"
                     && request.resource.data.status == "pending"
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["title", "summary", "content", "imageUrl", "updatedAt"]);
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["title", "summary", "content", "imageUrl", "sourceUrl", "imageCredit", "updatedAt"]);
 
       // Only admins can moderate (change status to published/rejected)
       allow update: if isAdmin()
