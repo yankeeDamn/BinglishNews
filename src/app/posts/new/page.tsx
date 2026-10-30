@@ -22,6 +22,8 @@ function NewPostForm() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [imageCredit, setImageCredit] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +69,8 @@ function NewPostForm() {
         summary: summary.trim(),
         content: content.trim(),
         imageUrl,
+        sourceUrl: sourceUrl.trim(),
+        imageCredit: imageCredit.trim(),
         authorId: user.uid,
         authorName: profile?.displayName || user.displayName || "Anonymous",
       });
@@ -131,6 +135,14 @@ function NewPostForm() {
             onChange={(e) => setContent(e.target.value)}
             className="rounded-lg border border-line bg-surface px-3 py-2 text-ink outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
           />
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">Source link (optional)
+          <input type="url" maxLength={2048} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://..." className="rounded-lg border border-line bg-surface px-3 py-2" />
+        </label>
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">Image credit (optional)
+          <input maxLength={200} value={imageCredit} onChange={(e) => setImageCredit(e.target.value)} className="rounded-lg border border-line bg-surface px-3 py-2" />
+          <span className="text-muted">Only upload images you have permission to use.</span>
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-ink/80">

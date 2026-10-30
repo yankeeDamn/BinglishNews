@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import AnalyticsConsent from "@/components/AnalyticsConsent";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
@@ -92,6 +94,10 @@ export default function RootLayout({
                 </ul>
               </nav>
             </div>
+            <nav aria-label="Publisher information" className="mx-auto mt-8 flex max-w-6xl flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+              <Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/editorial-policy">Editorial policy</Link><Link href="/corrections">Corrections</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link>
+              <Suspense fallback={null}><AnalyticsConsent measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} /></Suspense>
+            </nav>
             <p className="mx-auto mt-10 max-w-6xl border-t border-line pt-6 text-xs text-muted">
               © {new Date().getFullYear()} BinglishNews. Headlines link to their original publishers.
             </p>

@@ -41,7 +41,7 @@ export class GdeltProvider implements NewsProvider {
     // Build GDELT query — append region/country filter when requested
     let q = query;
     if (region === "IN") {
-      q = "india OR indian";
+      q = query === "world news" ? "india OR indian" : `${query} (india OR indian)`;
     }
     if (!q.includes("sourcelang:")) {
       q += " sourcelang:english";

@@ -16,6 +16,8 @@ export function BookmarkProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      // Hydrate saved bookmarks after the server-rendered empty state.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (Array.isArray(parsed)) setBookmarks(parsed.filter((item): item is Bookmark => item && typeof item.key === "string" && typeof item.title === "string" && typeof item.url === "string" && typeof item.source === "string" && typeof item.savedAt === "number"));
     } catch { /* Storage can be blocked or contain invalid data. */ }
     setReady(true);

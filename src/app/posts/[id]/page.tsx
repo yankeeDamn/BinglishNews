@@ -36,7 +36,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       type: "article",
       title: post.title,
       description: post.summary,
-      publishedTime: post.createdAt || undefined,
+      publishedTime: post.publishedAt || post.moderatedAt || undefined,
+      modifiedTime: post.updatedAt || undefined,
       authors: [post.authorName],
       images: post.imageUrl ? [{ url: post.imageUrl }] : undefined,
     },
@@ -54,7 +55,13 @@ export default async function PostDetailPage({ params }: Params) {
   const post = await loadPost(id);
   if (!post) notFound();
 
-  const date = post.createdAt ? new Date(post.createdAt) : null;
+  // Older stories may not have a publication timestamp. Never label creation as publication.
+  const publication = post.publishedAt || post.moderatedAt;
+  const date = publication ? new Date(publication) : null;
+  const updated = post.updatedAt ? new Date(post.updatedAt) : null;
+  const validUpdated = updated && !isNaN(updated.getTime()) ? updated : null;
+  let sourceUrl: string | undefined;
+  try { const parsed = new URL(post.sourceUrl || ""); if (["http:", "https:"].includes(parsed.protocol)) sourceUrl = parsed.href; } catch { /* No valid source URL. */ }
   const validDate = date && !isNaN(date.getTime()) ? date : null;
   const paragraphs = post.content.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
 
@@ -65,6 +72,7 @@ export default async function PostDetailPage({ params }: Params) {
     description: post.summary,
     image: post.imageUrl ? [post.imageUrl] : undefined,
     datePublished: validDate?.toISOString(),
+    dateModified: validUpdated?.toISOString(),
     author: { "@type": "Person", name: post.authorName },
   };
 
@@ -103,7 +111,7 @@ export default async function PostDetailPage({ params }: Params) {
               <>
                 <span aria-hidden="true">/</span>
                 <time dateTime={validDate.toISOString()}>
-                  {validDate.toLocaleDateString("en-US", {
+                  Published {validDate.toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -112,6 +120,7 @@ export default async function PostDetailPage({ params }: Params) {
                 </time>
               </>
             )}
+            {validUpdated && validDate && validUpdated.getTime() > validDate.getTime() + 60000 && <span>Updated <time dateTime={validUpdated.toISOString()}>{validUpdated.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })}</time></span>}
             <span aria-hidden="true">/</span>
             <span>{readingMinutes(post.content)} min read</span>
           </div>
@@ -126,6 +135,7 @@ export default async function PostDetailPage({ params }: Params) {
               alt=""
               className="aspect-[16/9] w-full rounded-md bg-sunken object-cover"
             />
+            {post.imageCredit && <figcaption className="mt-2 text-sm text-muted">Image: {post.imageCredit}</figcaption>}
           </figure>
         )}
 
@@ -136,6 +146,8 @@ export default async function PostDetailPage({ params }: Params) {
             </p>
           ))}
         </div>
+
+        {sourceUrl && <p className="mt-8 text-sm text-muted">Source: <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">{sourceUrl}</a></p>}
 
         <script
           type="application/ld+json"

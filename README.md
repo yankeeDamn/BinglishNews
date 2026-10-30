@@ -200,3 +200,12 @@ After creating a user account, manually set their role to `"admin"` in Firestore
 ## License
 
 MIT
+
+## Publisher launch checklist
+
+- Set `NEXT_PUBLIC_SITE_URL` to the public HTTPS origin and `NEXT_PUBLIC_CONTACT_EMAIL` to a monitored publisher address in Vercel, then redeploy. Review About, Editorial, Corrections, Privacy and Terms with the real publisher details and applicable requirements before launch.
+- Optional: set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to a GA4 `G-...` ID. Analytics does not load until the reader opts in; readers can change their choice in the footer. Review consent and privacy requirements for your audiences and configured services.
+- Publish and deploy `firestore.rules` before using the new source and image-credit fields in pending post edits. Existing posts remain readable. New approvals record a publication timestamp; old posts use their moderation timestamp when available, without presenting submission time as publication time.
+- Add reliable source links, confirm image rights and credits, and have an editor check every story. Verify each feed's terms and availability before commercial use. The site aggregates links; it does not grant rights to reuse publisher content or images.
+- The news feed paginates a bounded recent snapshot, so totals are not a count of all available articles. Source and time filters apply to the currently displayed page.
+- Verify `/sitemap.xml`, published article URLs, social previews, Firebase rules and deployed environment settings. Submit the sitemap in Search Console. Analytics traffic and advertising approval cannot be verified from this repository.

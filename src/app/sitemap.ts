@@ -8,8 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
   const entries: MetadataRoute.Sitemap = [
     { url: base, changeFrequency: "hourly", priority: 1 },
-    { url: `${base}/auth/signin`, changeFrequency: "yearly", priority: 0.2 },
-    { url: `${base}/auth/signup`, changeFrequency: "yearly", priority: 0.2 },
+    ...["about", "contact", "editorial-policy", "corrections", "privacy", "terms"].map((path) => ({ url: `${base}/${path}` })),
   ];
 
   try {

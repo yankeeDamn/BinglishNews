@@ -116,6 +116,8 @@ function AdminDashboard() {
                 </div>
               </details>
 
+              {post.sourceUrl && <p className="mb-2 break-all text-sm">Source: {post.sourceUrl}</p>}
+              {post.imageCredit && <p className="mb-2 text-sm">Image credit: {post.imageCredit}</p>}
               {post.imageUrl && (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
